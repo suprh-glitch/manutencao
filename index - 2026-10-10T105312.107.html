@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Manutenção de Equipamentos — Rede Nilo</title>
+<meta name="theme-color" content="#072772">
+<style>
+:root{--am:#F9E109;--am-l:#FCFC0A;--navy:#072772;--royal:#0C2E84;--red:#A61309;--vinho:#910702;--ink:#333;--bg:#F7F7F5;--card:#fff;--line:#e3e3dc;--mut:#6b6f7a;--ok:#1E7B4F;--warn:#E6A100;--r:10px}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+h1,h2,h3{color:var(--navy);margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+.muted{color:var(--mut)}.sm{font-size:12px}.b{font-weight:600}.right{text-align:right}.hide{display:none!important}
+/* header */
+header{background:var(--navy);color:#fff;border-bottom:4px solid var(--am);padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header .logo{background:var(--am);color:var(--navy);font-weight:800;border-radius:8px;padding:4px 10px;letter-spacing:.5px}
+header h1{color:#fff;font-size:16px;flex:1;min-width:180px}
+header .who{font-size:12px;opacity:.9;text-align:right}
+.demo{background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;background:#fff;border-bottom:1px solid var(--line);padding:0 12px;position:sticky;top:0;z-index:5}
+nav.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:12px 14px;cursor:pointer;color:var(--mut);font-weight:600;white-space:nowrap}
+nav.tabs button.on{color:var(--navy);border-color:var(--am)}
+main{padding:14px 16px;max-width:1500px;margin:0 auto}
+/* controls */
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--navy)}
+.btn.pri{background:var(--am);border-color:var(--am);color:var(--navy)}
+.btn.pri:hover{background:var(--warn);border-color:var(--warn)}
+.btn.dark{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn.red{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.sm{padding:4px 9px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.bar select,.bar input{border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:#fff;min-width:0}
+.bar .grow{flex:1}
+/* kpi strip */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--am);border-radius:var(--r);padding:10px 12px}
+.kpi .v{font-size:22px;font-weight:800;color:var(--navy)}
+.kpi .l{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--mut)}
+.kpi.bad{border-left-color:var(--red)}.kpi.bad .v{color:var(--red)}
+.kpi.good{border-left-color:var(--ok)}.kpi.good .v{color:var(--ok)}
+.kpi .s{font-size:11px;color:var(--mut)}
+/* kanban */
+.board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(250px,1fr);gap:10px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x proximity}
+.col{background:#ecece6;border-radius:var(--r);min-height:200px;scroll-snap-align:start;display:flex;flex-direction:column}
+.col h3{font-size:13px;padding:9px 10px;border-top:4px solid var(--c,#999);border-radius:var(--r) var(--r) 0 0;display:flex;justify-content:space-between;background:#fff}
+.col h3 span{background:var(--bg);border-radius:99px;padding:0 8px;font-size:12px}
+.col .cards{padding:8px;display:flex;flex-direction:column;gap:8px}
+.card{background:#fff;border:1px solid var(--line);border-left:5px solid var(--ok);border-radius:8px;padding:9px 10px;cursor:pointer}
+.card:hover{box-shadow:0 2px 8px rgba(7,39,114,.15)}
+.card.warn{border-left-color:var(--warn)}.card.late{border-left-color:var(--red)}.card.none{border-left-color:#aab}
+.card .t{display:flex;justify-content:space-between;gap:6px;font-size:12px}
+.card .n{font-weight:800;color:var(--navy)}
+.card .d{font-weight:600;margin:2px 0}
+.card .m{font-size:12px;color:var(--mut)}
+.chrono{display:flex;gap:8px;margin-top:6px;font-size:12px;align-items:center;flex-wrap:wrap}
+.chrono b{font-variant-numeric:tabular-nums}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:var(--ok)}
+.dot.warn{background:var(--warn)}.dot.late{background:var(--red);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.2}}
+.stg{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
+.stg span{font-size:11px;border:1px solid var(--line);border-left:3px solid var(--c);border-radius:5px;padding:1px 6px;background:var(--bg);color:var(--mut);white-space:nowrap}
+.stg span.cur{background:#fffbd6;border-color:var(--am);border-left-color:var(--c);color:var(--ink)}
+.stg b{color:var(--navy);font-variant-numeric:tabular-nums}
+.cardacts{display:flex;gap:6px;margin-top:8px}
+.cardacts .btn{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cardacts .btn.pri{flex:1 1 auto}
+.cardacts .btn:not(.pri){flex:0 0 auto}
+.slabar{height:5px;background:#e6e6df;border-radius:9px;margin-top:5px;overflow:hidden}
+.slabar i{display:block;height:100%;background:var(--ok)}.slabar i.warn{background:var(--warn)}.slabar i.late{background:var(--red)}
+.tag{display:inline-block;border-radius:99px;padding:1px 8px;font-size:11px;font-weight:700;background:#e8eaf3;color:var(--navy);white-space:nowrap}
+.tag.alta{background:#f6d9d6;color:var(--red)}.tag.media{background:#fbf0c2;color:#7a5a00}.tag.baixa{background:#dcefe4;color:var(--ok)}
+.tag.prev{background:var(--navy);color:#fff}
+.tag.flag{background:var(--red);color:#fff}.tag.am{background:var(--am);color:var(--navy)}
+/* tables */
+.tw{overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%}
+th{background:var(--navy);color:#fff;text-align:left;font-size:12px;padding:8px 10px;white-space:nowrap;position:sticky;top:0}
+td{padding:7px 10px;border-top:1px solid var(--line);vertical-align:top}
+tr.row{cursor:pointer}tr.row:hover td{background:#fffbd6}
+.panel{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:14px}
+.panel h2{font-size:15px;margin-bottom:8px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.cv{position:relative;height:260px}
+/* modal */
+#modal{position:fixed;inset:0;background:rgba(7,39,114,.45);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:20px 10px;z-index:50}
+#modal.on{display:flex}
+.mbox{background:#fff;border-radius:12px;width:100%;max-width:680px;padding:16px;border-top:5px solid var(--am)}
+.mbox.wide{max-width:900px}
+.mh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.mh button{border:0;background:none;font-size:24px;cursor:pointer;color:var(--mut)}
+.fld{margin-bottom:10px}
+.fld label{display:block;font-size:12px;font-weight:700;color:var(--navy);margin-bottom:3px}
+.fld input,.fld select,.fld textarea{width:100%;border:1px solid #cfd0c8;border-radius:8px;padding:8px}
+.fld textarea{min-height:68px}
+.fld .rad{display:flex;gap:14px;flex-wrap:wrap}.fld .rad label{font-weight:500;color:var(--ink)}
+.fld .rad input{width:auto}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.mf{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.novotipo{background:#fffbd6;border:1px solid var(--am);border-radius:8px;padding:8px 10px;margin-top:6px}
+.thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.thumbs img{width:74px;height:74px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:10px 0}
+.facts div{background:var(--bg);border-radius:8px;padding:6px 9px}
+.facts small{display:block;color:var(--mut);font-size:11px;text-transform:uppercase}
+.timers{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin:10px 0}
+.timers div{border:2px solid var(--navy);border-radius:10px;padding:8px 10px;text-align:center}
+.timers b{display:block;font-size:22px;font-variant-numeric:tabular-nums;color:var(--navy)}
+.timers .late{border-color:var(--red)}.timers .late b{color:var(--red)}
+.timers .warn{border-color:var(--warn)}
+.tl{border-left:3px solid var(--am);margin:8px 0 8px 6px;padding-left:14px}
+.tl li{list-style:none;margin-bottom:10px;position:relative}
+.tl li:before{content:"";position:absolute;left:-21px;top:5px;width:11px;height:11px;border-radius:50%;background:var(--navy);border:2px solid #fff}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.alert{background:#fff4d6;border:1px solid var(--am);border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:13px}
+.alert.red{background:#fbe3e0;border-color:var(--red)}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:8px;z-index:99;display:none}
+#login{max-width:360px;margin:8vh auto;background:#fff;border-radius:14px;padding:22px;border-top:6px solid var(--am);box-shadow:0 6px 24px rgba(7,39,114,.15)}
+#login h1{font-size:19px;margin-bottom:4px}
+#printArea{display:none}
+@media(max-width:640px){.fgrid{grid-template-columns:1fr}main{padding:10px}.board{grid-auto-columns:82%}header .who{text-align:left}}
+@media print{
+ .noprint,header,nav.tabs,#modal,#toast{display:none!important}
+ body{background:#fff}main{padding:0}.panel,.kpi,.tw{break-inside:avoid}
+ body.pf main{display:none}body.pf #printArea{display:block}
+ #printArea h1{color:var(--navy);border-bottom:4px solid var(--am);padding-bottom:6px}
+ #printArea table td{border:1px solid #bbb}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal"></div>
+<div id="toast"></div>
+<div id="printArea"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+/* =========================================================
+   CONFIGURAÇÃO — cole aqui a URL /exec do Apps Script.
+   Vazia = MODO DEMONSTRAÇÃO (dados no navegador).
+   ========================================================= */
+const CONFIG = { API_URL: 'https://script.google.com/macros/s/AKfycbzeSWigHyK4LvuZv9OQE-GWJdAlos3XHKNApU6zNdXJbI-ys_5QFrr63Qw2VULuCY3bdg/exec' };
+const SALT = 'nilo-manut';
+
+/* ---------- utilidades ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const H = 3600000, D = 86400000;
+const brl = n => (Number(n) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const fdt = t => t ? new Date(t).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+const fd = t => t ? new Date(t).toLocaleDateString('pt-BR') : '—';
+const dayISO = t => new Date(t).toISOString().slice(0, 10);
+function fdur(ms, sec) {
+  ms = Math.max(0, ms); const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60;
+  const p = n => String(n).padStart(2, '0');
+  if (d) return `${d}d ${h}h ${p(m)}m`;
+  if (h) return `${h}h ${p(m)}m` + (sec ? ` ${p(ss)}s` : '');
+  return `${m}m` + (sec ? ` ${p(ss)}s` : '');
+}
+function toast(m) { const t = $('#toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toast.t); toast.t = setTimeout(() => t.style.display = 'none', 3200); }
+async function sha(usuario, senha) {
+  const raw = SALT + '|' + String(usuario).toLowerCase() + '|' + senha;
+  if (window.crypto && crypto.subtle) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+  return btoa(raw);
+}
+const uid = () => Math.random().toString(16).slice(2, 10);
+
+/* ---------- domínio ---------- */
+const ETAPAS = [
+  { id: 'aberta', nome: 'Aberta', cor: '#8a93ab' },
+  { id: 'diagnostico', nome: 'Diagnóstico', cor: '#0C2E84' },
+  { id: 'transito', nome: 'Em trânsito', cor: '#E6A100' },
+  { id: 'manutencao', nome: 'Em manutenção', cor: '#072772' },
+  { id: 'pecas', nome: 'Aguardando peças', cor: '#A61309' },
+  { id: 'concluida', nome: 'Concluída', cor: '#1E7B4F' },
+  { id: 'disponivel', nome: 'Disponível p/ retirada', cor: '#3b8f86' },
+  { id: 'encerrada', nome: 'Encerrada', cor: '#555' },
+  { id: 'cancelada', nome: 'Cancelada', cor: '#999' }
+];
+const ET = Object.fromEntries(ETAPAS.map(e => [e.id, e]));
+const KANBAN = ['aberta', 'diagnostico', 'transito', 'manutencao', 'pecas', 'concluida', 'disponivel'];
+const TERMINAL = ['encerrada', 'cancelada'];
+const CRIT = { alta: 'Alta', media: 'Média', baixa: 'Baixa' };
+const CFG_DEFAULT = {
+  sla: { alta: 4, media: 24, baixa: 72 },
+  tipos: [
+    { nome: 'Câmara fria / congelamento', crit: 'alta', freq: 30 }, { nome: 'Compressor / refrigeração central', crit: 'alta', freq: 30 },
+    { nome: 'Freezer / expositor refrigerado', crit: 'alta', freq: 30 }, { nome: 'Sistema elétrico (quadros)', crit: 'alta', freq: 90 },
+    { nome: 'Balança / pesagem', crit: 'media', freq: 180 }, { nome: 'Padaria (forno, batedeira, modeladora)', crit: 'media', freq: 30 },
+    { nome: 'Açougue (serra, moedor, fatiadora)', crit: 'media', freq: 30 }, { nome: 'Ar-condicionado (área de vendas)', crit: 'media', freq: 30 },
+    { nome: 'Ar-condicionado (escritório/retaguarda)', crit: 'baixa', freq: 30 }, { nome: 'Empilhadeira / transpaleteira', crit: 'baixa', freq: 30 },
+    { nome: 'CFTV / alarme / controle de acesso', crit: 'baixa', freq: 180 }, { nome: 'Copa / refeitório', crit: 'baixa', freq: 180 },
+    { nome: 'Outro', crit: 'baixa', freq: 180 }]
+};
+
+const S = { user: null, token: '', lojas: [], equips: [], forn: [], planos: [], os: [], hist: [], usuarios: [], config: CFG_DEFAULT, view: 'kanban', f: { loja: '', tec: '', man: '', q: '', st: 'abertas' }, hb: {}, charts: [] };
+const isM = () => S.user.perfil === 'master', isT = () => S.user.perfil === 'tecnico', isL = () => S.user.perfil === 'loja';
+const minhasLojas = () => S.user.lojas === '*' ? S.lojas.map(l => l.id) : String(S.user.lojas || '').split(',').filter(Boolean);
+const lojaN = id => (S.lojas.find(l => l.id === id) || {}).nome || '—';
+const userN = id => (S.usuarios.find(u => u.id === id) || {}).nome || '—';
+const equipOf = id => S.equips.find(e => e.id === id);
+const fornN = id => { if (!id) return '—'; if (String(id).startsWith('x:')) return String(id).slice(2) + ' (não homologado)'; const f = S.forn.find(x => x.id === id); return f ? f.nome : '—'; };
+const tipoCfg = nome => S.config.tipos.find(t => t.nome === nome) || { crit: 'baixa', freq: 180 };
+const sla = c => (S.config.sla || CFG_DEFAULT.sla)[c] || 24;
+const abertas = () => S.os.filter(o => !TERMINAL.includes(o.status));
+
+/* ---------- camada de dados (remoto = Apps Script | local = demo) ---------- */
+async function api(action, payload = {}) {
+  if (!CONFIG.API_URL) return Local.call(action, payload);
+  let r, j;
+  try { r = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, token: S.token, ...payload }) }); }
+  catch (err) { throw new Error('Sem conexão com o servidor. Verifique a internet e se a implantação do Apps Script está com acesso "Qualquer pessoa".'); }
+  try { j = JSON.parse(await r.text()); }
+  catch (err) { throw new Error('O Apps Script não respondeu como API. Publique a versão mais recente do Code.gs (Implantar > Gerenciar implantações > Nova versão), autorize as permissões e confira o acesso "Qualquer pessoa".'); }
+  if (!j.ok) { const e = new Error(j.error || 'Erro'); e.code = j.code; throw e; }
+  return j.data;
+}
+const Local = {
+  KEY: 'nilo_manut_demo_v2',
+  db() { try { const d = JSON.parse(localStorage.getItem(this.KEY)); if (d) return d; } catch (e) { } const d = seedDemo(); this.save(d); return d; },
+  save(d) { try { localStorage.setItem(this.KEY, JSON.stringify(d)); } catch (e) { toast('Armazenamento local cheio'); } },
+  reset() { try { localStorage.removeItem(this.KEY); } catch (e) { } },
+  vis(u, o) { if (u.perfil === 'master') return true; if (u.perfil === 'tecnico') return o.tecnicoId === u.id; const l = u.lojas === '*' ? null : String(u.lojas).split(','); return !l || l.includes(o.lojaOrigem) || l.includes(o.lojaDestino); },
+  pub(u, full) { const o = { id: u.id, nome: u.nome, perfil: u.perfil, lojas: u.lojas, ativo: u.ativo }; if (full) { o.usuario = u.usuario; o.email = u.email; o.trocar = u.trocar; o.bloqueioAte = u.bloqueioAte; } return o; },
+  async call(action, p) {
+    const d = this.db(), find = n => d.usuarios.find(x => x.usuario.toLowerCase() === String(n || '').trim().toLowerCase());
+    if (action === 'login') {
+      const u = find(p.usuario), agora = Date.now(); if (!u) throw new Error('Usuário ou senha inválidos.');
+      if (u.bloqueioAte && new Date(u.bloqueioAte) > agora) throw new Error('Acesso bloqueado por tentativas inválidas. Tente em ' + Math.ceil((new Date(u.bloqueioAte) - agora) / 60000) + ' min ou peça o desbloqueio ao Master.');
+      if (u.hash !== p.hash) { u.falhas = (u.falhas || 0) + 1; if (u.falhas >= 5) { u.bloqueioAte = new Date(agora + 15 * 60000).toISOString(); u.falhas = 0; } this.save(d); throw new Error('Usuário ou senha inválidos.'); }
+      if (u.ativo === 'pendente') throw new Error('Cadastro aguardando autorização do Master.');
+      if (u.ativo !== 'sim') throw new Error('Acesso inativo. Procure o Master.');
+      u.falhas = 0; u.bloqueioAte = ''; this.save(d); return { token: 'local:' + u.id, user: this.pub(u, true) };
+    }
+    if (action === 'register') {
+      if (!p.usuario || !p.nome || !p.email || !p.hash) throw new Error('Preencha nome, e-mail, usuário e senha');
+      if (find(p.usuario)) throw new Error('Nome de usuário já existe');
+      d.usuarios.push({ id: uid(), nome: p.nome, usuario: p.usuario.trim(), email: p.email, hash: p.hash, perfil: 'loja', lojas: '', ativo: 'pendente', criadoEm: new Date().toISOString(), trocar: 'nao', falhas: 0 }); this.save(d); return { ok: true };
+    }
+    if (action === 'forgot') {
+      const u = find(p.usuario); let cod = '';
+      if (u && u.ativo === 'sim') { cod = String(Math.floor(100000 + Math.random() * 900000)); u.resetCod = cod; u.resetExp = Date.now() + 30 * 60000; this.save(d); }
+      return { enviado: true, codigoDemo: cod };
+    }
+    if (action === 'resetPassword') {
+      const u = find(p.usuario); if (!u || !u.resetCod || u.resetExp < Date.now() || u.resetCod !== String(p.codigo).trim()) throw new Error('Código inválido ou expirado. Solicite um novo.');
+      u.hash = p.hash; u.resetCod = ''; u.falhas = 0; u.bloqueioAte = ''; u.trocar = 'nao'; this.save(d); return { ok: true };
+    }
+    const u = d.usuarios.find(x => 'local:' + x.id === p.token || 'local:' + x.id === S.token);
+    if (!u) { const e = new Error('Sessão expirada'); e.code = 'auth'; throw e; }
+    if (action === 'bootstrap') {
+      const os = d.os.filter(o => this.vis(u, o)), set = new Set(os.map(o => o.numero));
+      return { user: this.pub(u, true), lojas: d.lojas, equipamentos: d.equipamentos, fornecedores: d.fornecedores, planos: d.planos, os, hist: d.hist.filter(h => set.has(h.os)), usuarios: d.usuarios.map(x => this.pub(x, u.perfil === 'master')), config: d.config };
+    }
+    if (action === 'saveOS') {
+      const os = p.os, ev = p.evento;
+      if (!os.numero) { const y = new Date().getFullYear(); let mx = 0; d.os.forEach(o => { const m = o.numero.match(/^OS-(\d{4})-(\d+)$/); if (m && +m[1] === y) mx = Math.max(mx, +m[2]); }); os.numero = `OS-${y}-${String(mx + 1).padStart(4, '0')}`; os.criadoEm = new Date().toISOString(); os.criadoPor = u.id; }
+      os.atualizadoEm = new Date().toISOString();
+      const i = d.os.findIndex(o => o.numero === os.numero); if (i < 0) d.os.push(os); else d.os[i] = os;
+      if (ev) { ev.os = os.numero; ev.id = uid(); ev.usuario = u.id; ev.ts = ev.ts || new Date().toISOString(); d.hist.push(ev); }
+      this.save(d); return { os, evento: ev };
+    }
+    if (action === 'saveEntity') {
+      const map = { Usuarios: 'usuarios', Lojas: 'lojas', Equipamentos: 'equipamentos', Fornecedores: 'fornecedores', Planos: 'planos', Config: 'config' };
+      const row = p.row;
+      if (p.sheet === 'Config') { if (u.perfil !== 'master' && !(row.chave === 'tipos' && (d.config.tipos || []).every(t => row.valor.some(n => n.nome === t.nome)))) throw new Error('Apenas Master'); d.config[row.chave] = row.valor; this.save(d); return row; }
+      if (['Usuarios', 'Lojas', 'Fornecedores'].includes(p.sheet) && u.perfil !== 'master') throw new Error('Apenas Master');
+      const arr = d[map[p.sheet]]; if (!row.id) { row.id = uid(); row.criadoEm = new Date().toISOString(); }
+      if (p.sheet === 'Usuarios') { const ex = arr.find(x => x.id === row.id) || {}; row.hash = row.novoHash || ex.hash; row.trocar = row.novoHash ? 'sim' : (ex.trocar || 'nao'); row.falhas = 0; row.bloqueioAte = ''; delete row.novoHash; if (!row.hash) throw new Error('Defina uma senha'); if (arr.some(x => x.usuario.toLowerCase() === row.usuario.toLowerCase() && x.id !== row.id)) throw new Error('Nome de usuário já existe'); }
+      const i = arr.findIndex(x => x.id === row.id); if (i < 0) arr.push(row); else arr[i] = row;
+      this.save(d); return row;
+    }
+    if (action === 'changePassword') { if (u.hash !== p.atual) throw new Error('Senha atual incorreta'); if (p.novo === u.hash) throw new Error('A nova senha deve ser diferente da atual'); u.hash = p.novo; u.trocar = 'nao'; this.save(d); return { ok: true }; }
+    if (action === 'uploadFoto') return { url: p.dataUrl };
+    throw new Error('Ação inválida');
+  }
+};
+
+async function carregar() {
+  const d = await api('bootstrap');
+  Object.assign(S, { user: d.user, lojas: d.lojas, equips: d.equipamentos, forn: d.fornecedores || [], planos: d.planos || [], os: d.os, hist: d.hist, usuarios: d.usuarios });
+  S.config = { sla: (d.config && d.config.sla) || CFG_DEFAULT.sla, tipos: (d.config && d.config.tipos) || CFG_DEFAULT.tipos };
+  S.hb = {}; S.hist.forEach(h => (S.hb[h.os] = S.hb[h.os] || []).push(h));
+  Object.values(S.hb).forEach(a => a.sort((x, y) => new Date(x.ts) - new Date(y.ts)));
+  try { localStorage.setItem('nilo_manut_cache', JSON.stringify(d)); } catch (e) { }
+}
+
+/* ---------- cronômetros e SLA ---------- */
+function tempos(os) {
+  const ev = S.hb[os.numero] || [], now = Date.now(), por = {};
+  const first = ev.length ? new Date(ev[0].ts).getTime() : new Date(os.criadoEm).getTime();
+  ev.forEach((e, i) => {
+    const a = new Date(e.ts).getTime(), b = ev[i + 1] ? new Date(ev[i + 1].ts).getTime() : (TERMINAL.includes(os.status) ? a : now);
+    if (!TERMINAL.includes(e.para)) por[e.para] = (por[e.para] || 0) + (b - a);
+  });
+  const fim = TERMINAL.includes(os.status) ? new Date(os.encerradoEm || (ev.length ? ev[ev.length - 1].ts : now)).getTime() : now;
+  const conc = ev.find(e => e.para === 'concluida' || e.para === 'encerrada');
+  return { por, first, total: fim - first, fim, concTs: conc ? new Date(conc.ts).getTime() : null, inativ: fim - first };
+}
+function slaInfo(os) {
+  if (os.tipoMan !== 'corretiva' || os.status === 'cancelada') return null;
+  const t = tempos(os), lim = sla(os.criticidade) * H, end = t.concTs || Date.now(), el = end - t.first, closed = !!t.concTs;
+  const pct = el / lim;
+  return { el, lim, pct, closed, state: closed ? (el <= lim ? 'ok' : 'late') : pct >= 1 ? 'late' : pct >= .8 ? 'warn' : 'ok' };
+}
+const custo = o => (+o.custoPecas || 0) + (+o.custoMO || 0);
+
+/* ---------- permissões e ações ---------- */
+function pode(os, a) {
+  if (a === 'comentar') return true;
+  if (isM()) return true;
+  if (isT()) return os.tecnicoId === S.user.id && !['atribuir', 'cancelar', 'reabrir'].includes(a);
+  if (isL()) { const l = minhasLojas(); if (a === 'encerrar') return l.includes(os.lojaOrigem); if (a === 'receber') return l.includes(os.lojaDestino) && os.atendimento === 'transferir'; }
+  return false;
+}
+const ACOES_ETAPA = {
+  aberta: ['atribuir', 'iniciar', 'cancelar'], diagnostico: ['definir', 'atribuir', 'cancelar'], transito: ['receber', 'atribuir', 'cancelar'],
+  manutencao: ['pecas', 'concluir', 'atribuir', 'cancelar'], pecas: ['atualizarPecas', 'retomar', 'cancelar'],
+  concluida: ['disponibilizar', 'cancelar'], disponivel: ['encerrar'], encerrada: ['reabrir'], cancelada: []
+};
+const polos = () => S.lojas.filter(l => l.polo === 'sim' && l.ativo !== 'nao');
+const tecnicosOpts = () => S.usuarios.filter(u => ['tecnico', 'master'].includes(u.perfil) && u.ativo === 'sim').map(u => ({ v: u.id, l: `${u.nome} (${u.perfil})` }));
+const fornOpts = () => [...S.forn.filter(f => f.homologado === 'sim' && f.ativo !== 'nao').map(f => ({ v: f.id, l: `${f.nome} — ${f.especialidade || 'geral'}${f.slaHoras ? ' · SLA ' + f.slaHoras + 'h' : ''}` })), { v: 'x', l: '— Fornecedor NÃO homologado (informar)' }];
+const FASE = { cotacao: 'Em cotação', aguardando: 'Aguardando chegada das peças', recebida: 'Peças recebidas' };
+
+const ACOES = {
+  atribuir: { t: 'Atribuir técnico', campos: o => [{ k: 'tecnicoId', l: 'Técnico responsável', tipo: 'select', opts: tecnicosOpts(), req: 1, val: o.tecnicoId }, { k: 'obs', l: 'Observação', tipo: 'textarea' }], run: (o, f) => { o.tecnicoId = f.tecnicoId; return { acao: 'Atribuída a ' + userN(f.tecnicoId) }; } },
+  iniciar: { t: 'Iniciar diagnóstico', para: () => 'diagnostico', campos: () => [{ k: 'obs', l: 'Observação', tipo: 'textarea' }], run: (o) => { if (!o.tecnicoId && isT()) o.tecnicoId = S.user.id; return { acao: 'Diagnóstico iniciado' }; } },
+  definir: {
+    t: 'Registrar diagnóstico e definir atendimento', para: (o, f) => f.atendimento === 'local' ? 'manutencao' : 'transito',
+    campos: o => [
+      { k: 'diagnostico', l: 'Problema identificado / causa provável', tipo: 'textarea', req: 1, val: o.diagnostico },
+      { k: 'criticidade', l: 'Criticidade', tipo: 'select', opts: Object.entries(CRIT).map(([v, l]) => ({ v, l: `${l} — SLA ${sla(v)}h` })), val: o.criticidade },
+      { k: 'atendimento', l: 'Onde será feito o serviço?', tipo: 'radio', req: 1, val: o.atendimento || 'local', opts: [{ v: 'local', l: 'Na própria loja' }, { v: 'transferir', l: 'Transferir p/ unidade de manutenção' }, { v: 'terceiro', l: 'Serviço terceirizado' }] },
+      { k: 'lojaDestino', l: 'Unidade de manutenção (destino)', tipo: 'select', opts: polos().map(l => ({ v: l.id, l: l.nome })), showIf: ['atendimento', 'transferir'], req: 1 },
+      { k: 'fornecedorId', l: 'Fornecedor', tipo: 'select', opts: fornOpts(), showIf: ['atendimento', 'terceiro'], req: 1 },
+      { k: 'fornecedorLivre', l: 'Nome do fornecedor não homologado', tipo: 'text', showIf: ['fornecedorId', 'x'], req: 1 },
+      { k: 'previsao', l: 'Previsão de conclusão', tipo: 'date', val: o.previsao },
+      { k: 'obs', l: 'Observações (ex.: nº da transferência / NF de remessa)', tipo: 'textarea' }, { k: 'fotos', tipo: 'fotos', l: 'Fotos do diagnóstico' }],
+    run: (o, f) => {
+      o.diagnostico = f.diagnostico; o.criticidade = f.criticidade; o.atendimento = f.atendimento; o.previsao = f.previsao || '';
+      o.lojaDestino = f.atendimento === 'transferir' ? f.lojaDestino : ''; o.fornecedorId = f.atendimento === 'terceiro' ? (f.fornecedorId === 'x' ? 'x:' + f.fornecedorLivre : f.fornecedorId) : '';
+      const dest = f.atendimento === 'local' ? 'manutenção na própria loja' : f.atendimento === 'transferir' ? 'transferência para ' + lojaN(o.lojaDestino) : 'terceirizado: ' + fornN(o.fornecedorId);
+      return { acao: 'Diagnóstico: ' + dest, obs: f.obs };
+    }
+  },
+  receber: { t: 'Acusar recebimento', para: () => 'manutencao', campos: () => [{ k: 'condicao', l: 'Condição do equipamento no recebimento', tipo: 'select', opts: ['Conforme enviado', 'Com avaria adicional', 'Faltam acessórios'], req: 1 }, { k: 'obs', l: 'Observações', tipo: 'textarea' }, { k: 'fotos', tipo: 'fotos', l: 'Fotos do recebimento' }], run: (o, f) => ({ acao: 'Recebimento acusado — ' + f.condicao, obs: f.obs }) },
+  pecas: { t: 'Solicitar / cotar peças', para: () => 'pecas', campos: () => pecasCampos({}), run: (o, f) => { o.pecas = { fase: f.fase, itens: f.itens, forn: f.forn, previsao: f.previsao }; return { acao: 'Peças: ' + FASE[f.fase], obs: f.itens + (f.obs ? ' — ' + f.obs : '') }; } },
+  atualizarPecas: { t: 'Atualizar situação das peças', campos: o => pecasCampos(o.pecas || {}), run: (o, f) => { o.pecas = { fase: f.fase, itens: f.itens, forn: f.forn, previsao: f.previsao }; return { acao: 'Peças: ' + FASE[f.fase], obs: f.obs }; } },
+  retomar: { t: 'Peças recebidas — retomar manutenção', para: () => 'manutencao', campos: () => [{ k: 'obs', l: 'Observação', tipo: 'textarea' }], run: o => { o.pecas = { ...(o.pecas || {}), fase: 'recebida' }; return { acao: 'Peças recebidas — manutenção retomada' }; } },
+  concluir: {
+    t: 'Concluir serviço', para: () => 'concluida',
+    campos: () => [{ k: 'solucao', l: 'Solução aplicada', tipo: 'textarea', req: 1 }, { k: 'custoPecas', l: 'Custo de peças (R$)', tipo: 'number', val: 0 }, { k: 'custoMO', l: 'Custo de mão de obra (R$)', tipo: 'number', val: 0 }, { k: 'nf', l: 'Nº da NF / laudo técnico', tipo: 'text' }, { k: 'obs', l: 'Observações', tipo: 'textarea' }, { k: 'fotos', tipo: 'fotos', l: 'Fotos do serviço concluído' }],
+    run: (o, f) => { o.solucao = f.solucao; o.custoPecas = +f.custoPecas || 0; o.custoMO = +f.custoMO || 0; o.nf = f.nf; return { acao: 'Serviço concluído', obs: f.obs }; }
+  },
+  disponibilizar: { t: 'Disponibilizar para retirada / transferência', para: () => 'disponivel', campos: () => [{ k: 'obs', l: 'Observação (local de retirada, transporte…)', tipo: 'textarea' }], run: () => ({ acao: 'Equipamento disponível para retirada/transferência' }) },
+  encerrar: { t: 'Confirmar retorno à loja e encerrar', para: () => 'encerrada', campos: () => [{ k: 'obs', l: 'Observação do recebimento na loja', tipo: 'textarea' }], run: () => ({ acao: 'Retorno confirmado — OS encerrada' }) },
+  reabrir: { t: 'Reabrir OS', para: () => 'manutencao', campos: () => [{ k: 'obs', l: 'Motivo da reabertura', tipo: 'textarea', req: 1 }], run: o => { o.encerradoEm = ''; return { acao: 'OS reaberta' }; } },
+  cancelar: { t: 'Cancelar OS', para: () => 'cancelada', campos: () => [{ k: 'obs', l: 'Motivo do cancelamento', tipo: 'textarea', req: 1 }], run: () => ({ acao: 'OS cancelada' }) },
+  comentar: { t: 'Adicionar observação', campos: () => [{ k: 'obs', l: 'Observação', tipo: 'textarea', req: 1 }, { k: 'fotos', tipo: 'fotos', l: 'Fotos' }], run: () => ({ acao: 'Observação' }) }
+};
+function pecasCampos(p) {
+  return [{ k: 'fase', l: 'Situação', tipo: 'radio', req: 1, val: p.fase === 'recebida' ? 'cotacao' : (p.fase || 'cotacao'), opts: [{ v: 'cotacao', l: 'Em cotação' }, { v: 'aguardando', l: 'Aguardando chegada' }] },
+  { k: 'itens', l: 'Peças necessárias', tipo: 'textarea', req: 1, val: p.itens }, { k: 'forn', l: 'Fornecedor das peças', tipo: 'text', val: p.forn }, { k: 'previsao', l: 'Previsão de chegada', tipo: 'date', val: p.previsao }, { k: 'obs', l: 'Observações', tipo: 'textarea' }];
+}
+const ACAO_LABEL = { receber: o => o.atendimento === 'terceiro' ? 'Confirmar recebimento pelo fornecedor' : 'Acusar recebimento' };
+
+async function execAcao(os, key, f) {
+  const A = ACOES[key], o = JSON.parse(JSON.stringify(os)), r = A.run(o, f) || {}, de = o.status, para = A.para ? A.para(o, f) : de;
+  const ev = { de, para, acao: r.acao || A.t, obs: r.obs ?? f.obs ?? '', ts: new Date().toISOString() };
+  if (para !== de) { o.status = para; o.etapaDesde = ev.ts; }
+  if (TERMINAL.includes(para)) o.encerradoEm = ev.ts;
+  if (f._fotos && f._fotos.length) o.fotos = [...(o.fotos || []), ...f._fotos.map(u => ({ url: u, ts: ev.ts, etapa: para }))];
+  await api('saveOS', { os: o, evento: ev });
+  if (key === 'concluir' && o.planoId) { const pl = S.planos.find(p => p.id === o.planoId); if (pl) { const hoje = dayISO(Date.now()); await api('saveEntity', { sheet: 'Planos', row: { ...pl, ultima: hoje, proxima: dayISO(Date.now() + pl.freqDias * D) } }); } }
+  await carregar(); render(); return o.numero;
+}
+
+/* ---------- modal / formulários ---------- */
+function modal(html, wide) { const m = $('#modal'); m.innerHTML = `<div class="mbox ${wide ? 'wide' : ''}">${html}</div>`; m.classList.add('on'); m.scrollTop = 0; }
+function closeModal(force) { if (S.forceChange && !force) return; $('#modal').classList.remove('on'); $('#modal').innerHTML = ''; }
+function fieldHtml(c) {
+  if (c.tipo === 'hidden') return '';
+  const req = c.req ? ' required' : '', v = c.val ?? '', sh = c.showIf ? ` data-sk="${c.showIf[0]}" data-sv="${c.showIf[1]}"` : '';
+  let inp;
+  const opts = (c.opts || []).map(o => typeof o === 'string' ? { v: o, l: o } : o);
+  if (c.tipo === 'textarea') inp = `<textarea name="${c.k}"${req}>${esc(v)}</textarea>`;
+  else if (c.tipo === 'select') inp = `<select name="${c.k}"${req}><option value="">Selecione…</option>${opts.map(o => `<option value="${esc(o.v)}"${o.v == v ? ' selected' : ''}>${esc(o.l)}</option>`).join('')}</select>`;
+  else if (c.tipo === 'radio') inp = `<div class="rad">${opts.map(o => `<label><input type="radio" name="${c.k}" value="${esc(o.v)}"${o.v == v ? ' checked' : ''}${req}> ${esc(o.l)}</label>`).join('')}</div>`;
+  else if (c.tipo === 'fotos') inp = `<input type="file" name="_file_${c.k}" accept="image/*" multiple><div class="thumbs"></div>`;
+  else inp = `<input name="${c.k}" type="${c.tipo || 'text'}" value="${esc(v)}"${c.tipo === 'number' ? ' step="0.01" min="0"' : ''}${c.list ? ` list="dl_${c.k}"` : ''}${req}>${c.list ? `<datalist id="dl_${c.k}">${c.list.map(x => `<option value="${esc(x)}">`).join('')}</datalist>` : ''}`;
+  return `<div class="fld"${sh}><label>${esc(c.l || '')}${c.req ? ' *' : ''}${c.novoTipo ? ' <button type="button" class="btn sm pri" data-newtipo style="float:right;margin-top:-4px">＋ Cadastrar novo</button>' : ''}</label>${inp}</div>`;
+}
+function compress(file, max = 1100, q = .72) {
+  return new Promise(res => { const r = new FileReader(); r.onload = () => { const im = new Image(); im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = im.width * k; c.height = im.height * k; c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); res(c.toDataURL('image/jpeg', q)); }; im.src = r.result; }; r.readAsDataURL(file); });
+}
+function openForm({ titulo, sub, campos, ok = 'Salvar', onSubmit, wide, after, grid }) {
+  modal(`<div class="mh"><h3>${esc(titulo)}</h3><button data-act="close">×</button></div>${sub ? `<p class="muted sm">${sub}</p>` : ''}<form id="frm"><div class="${grid ? 'fgrid' : ''}">${campos.map(fieldHtml).join('')}</div><div class="mf"><button type="button" class="btn" data-act="close">Cancelar</button><button class="btn pri" type="submit">${esc(ok)}</button></div></form>`, wide);
+  const f = $('#frm'), fotos = {};
+  const upd = () => $$('[data-sk]', f).forEach(w => { const el = f.elements[w.dataset.sk]; const v = el && (el.value !== undefined ? el.value : ''); const on = (el instanceof RadioNodeList ? el.value : v) === w.dataset.sv; w.classList.toggle('hide', !on); $$('input,select,textarea', w).forEach(i => i.disabled = !on); });
+  f.addEventListener('change', async e => {
+    upd();
+    if (e.target.type === 'file') { const k = e.target.name.replace('_file_', ''); fotos[k] = fotos[k] || []; for (const file of e.target.files) fotos[k].push(await compress(file)); e.target.value = ''; e.target.parentNode.querySelector('.thumbs').innerHTML = fotos[k].map(u => `<img src="${u}">`).join(''); }
+  });
+  f.addEventListener('click', e => { if (e.target.closest('[data-newtipo]')) novoTipoInline(f, e.target.closest('.fld')); });
+  upd(); if (after) after(f);
+  f.addEventListener('submit', async e => {
+    e.preventDefault(); const btn = $('button[type=submit]', f); btn.disabled = true; btn.textContent = 'Salvando…';
+    try {
+      const v = {}; campos.forEach(c => { if (c.tipo === 'fotos' || c.tipo === 'hidden') return; const el = f.elements[c.k]; if (el && !el.disabled || el instanceof RadioNodeList) v[c.k] = el.value; });
+      const all = Object.values(fotos).flat(); v._fotos = [];
+      for (const u of all) { const r = await api('uploadFoto', { nome: 'os', dataUrl: u }); v._fotos.push(r.url); }
+      await onSubmit(v);
+    } catch (err) { toast(err.message); btn.disabled = false; btn.textContent = ok; if (err.code === 'auth') logout(); }
+  });
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function novoTipoInline(f, fld) {
+  if ($('.novotipo', fld)) { $('.novotipo input', fld).focus(); return; }
+  const box = document.createElement('div'); box.className = 'novotipo';
+  box.innerHTML = `<b class="sm">Novo tipo de equipamento</b><div class="fgrid"><div class="fld"><label>Nome *</label><input class="nt-n"></div><div class="fld"><label>Criticidade *</label><select class="nt-c">${Object.entries(CRIT).map(([v, l]) => `<option value="${v}">${l} — SLA ${sla(v)}h</option>`).join('')}</select></div></div><div class="fld"><label>Frequência da preventiva (dias)</label><input class="nt-f" type="number" min="1" value="30"></div><div class="mf" style="margin-top:0"><button type="button" class="btn sm nt-x">Cancelar</button><button type="button" class="btn sm pri nt-s">Inserir</button></div>`;
+  fld.appendChild(box); $('.nt-n', box).focus(); box.scrollIntoView({ block: 'nearest' });
+  box.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('.nt-s', box).click(); } });
+  $('.nt-x', box).onclick = () => box.remove();
+  $('.nt-s', box).onclick = async () => {
+    const nome = $('.nt-n', box).value.trim(); if (!nome) return toast('Informe o nome do tipo');
+    if (S.config.tipos.some(t => t.nome.toLowerCase() === nome.toLowerCase())) return toast('Esse tipo já existe');
+    const t = { nome, crit: $('.nt-c', box).value, freq: +$('.nt-f', box).value || 30 };
+    try { const tipos = [...S.config.tipos, t]; await api('saveEntity', { sheet: 'Config', row: { chave: 'tipos', valor: tipos } }); S.config.tipos = tipos; } catch (err) { return toast(err.message); }
+    const sel = $('select', fld); sel.insertAdjacentHTML('beforeend', `<option value="${esc(nome)}">${esc(nome)}</option>`); sel.value = nome;
+    const cr = f.elements.criticidade; if (cr && !cr.value) cr.value = t.crit;
+    box.remove(); toast('Tipo cadastrado');
+  };
+}
+
+/* ---------- nova OS ---------- */
+function novaOS(pre = {}) {
+  const lojas = S.lojas.filter(l => minhasLojas().includes(l.id) && l.ativo !== 'nao');
+  const tipos = S.config.tipos.map(t => t.nome);
+  const eq = pre.equip || {};
+  const campos = [
+    { k: 'lojaOrigem', l: 'Loja de origem', tipo: 'select', opts: lojas.map(l => ({ v: l.id, l: l.nome })), req: 1, val: eq.lojaId || (lojas.length === 1 ? lojas[0].id : '') },
+    { k: 'tipoMan', l: 'Tipo de manutenção', tipo: 'radio', req: 1, val: pre.tipoMan || 'corretiva', opts: [{ v: 'corretiva', l: 'Corretiva (quebra)' }, { v: 'preventiva', l: 'Preventiva' }] },
+    { k: 'patrimonio', l: 'Nº do patrimônio', tipo: 'text', req: 1, val: eq.patrimonio, list: S.equips.map(e => e.patrimonio) },
+    { k: 'serie', l: 'Nº de série', tipo: 'text', val: eq.serie }, { k: 'descricao', l: 'Equipamento (descrição)', tipo: 'text', req: 1, val: eq.descricao },
+    { k: 'tipo', l: 'Tipo de equipamento', tipo: 'select', opts: tipos, req: 1, val: eq.tipo, novoTipo: 1 }, { k: 'secao', l: 'Seção envolvida', tipo: 'text', val: eq.secao },
+    { k: 'criticidade', l: 'Criticidade (define o SLA)', tipo: 'select', opts: Object.entries(CRIT).map(([v, l]) => ({ v, l: `${l} — SLA ${sla(v)}h` })), req: 1, val: eq.criticidade },
+    ...(isM() ? [{ k: 'tecnicoId', l: 'Atribuir técnico (opcional)', tipo: 'select', opts: tecnicosOpts() }] : []),
+    { k: 'problema', l: 'Descrição do problema / serviço', tipo: 'textarea', req: 1, val: pre.problema }, { k: 'fotos', tipo: 'fotos', l: 'Fotos (registro na loja)' }];
+  openForm({
+    titulo: pre.tipoMan === 'preventiva' ? 'Nova OS preventiva' : 'Nova ordem de serviço', sub: 'O número da OS e o cronômetro iniciam ao salvar.', campos, ok: 'Gerar OS', grid: 1, wide: 1,
+    after: f => {
+      f.elements.patrimonio.addEventListener('change', () => { const e = S.equips.find(x => x.patrimonio === f.elements.patrimonio.value); if (e) { ['serie', 'descricao', 'tipo', 'secao', 'criticidade'].forEach(k => f.elements[k].value = e[k] || ''); if (!f.elements.lojaOrigem.value) f.elements.lojaOrigem.value = e.lojaId; } });
+      f.elements.tipo.addEventListener('change', () => { if (!f.elements.criticidade.value) f.elements.criticidade.value = tipoCfg(f.elements.tipo.value).crit; });
+    },
+    onSubmit: async v => {
+      let e = S.equips.find(x => x.patrimonio === v.patrimonio);
+      if (!e) e = await api('saveEntity', { sheet: 'Equipamentos', row: { patrimonio: v.patrimonio, serie: v.serie, descricao: v.descricao, tipo: v.tipo, secao: v.secao, marca: '', lojaId: v.lojaOrigem, criticidade: v.criticidade, valorReposicao: 0, garantiaAte: '', ativo: 'sim' } });
+      const agora = new Date().toISOString();
+      const os = { numero: '', lojaOrigem: v.lojaOrigem, equipId: e.id, patrimonio: e.patrimonio, serie: e.serie, descricao: e.descricao, tipo: e.tipo, secao: v.secao, problema: v.problema, tipoMan: v.tipoMan, criticidade: v.criticidade, status: 'aberta', etapaDesde: agora, atendimento: '', lojaDestino: '', fornecedorId: '', tecnicoId: v.tecnicoId || (isT() ? S.user.id : ''), pecas: {}, fotos: (v._fotos || []).map(u => ({ url: u, ts: agora, etapa: 'aberta' })), diagnostico: '', solucao: '', custoPecas: 0, custoMO: 0, nf: '', previsao: '', planoId: pre.plano ? pre.plano.id : '', encerradoEm: '' };
+      const r = await api('saveOS', { os, evento: { de: '', para: 'aberta', acao: 'OS aberta', obs: v.problema, ts: agora } });
+      await carregar(); render(); toast('OS ' + r.os.numero + ' gerada'); detalhe(r.os.numero);
+    }
+  });
+}
+
+/* ---------- detalhe da OS ---------- */
+function detalhe(num) {
+  const os = S.os.find(o => o.numero === num); if (!os) return;
+  const t = tempos(os), sl = slaInfo(os), ev = S.hb[num] || [], e = ET[os.status];
+  const cls = TERMINAL.includes(os.status) ? '' : 'dyn';
+  const acoes = [...(ACOES_ETAPA[os.status] || []), 'comentar'].filter(a => pode(os, a));
+  const timeline = ev.map((x, i) => {
+    const a = new Date(x.ts).getTime(), b = ev[i + 1] ? new Date(ev[i + 1].ts).getTime() : (TERMINAL.includes(os.status) ? a : Date.now()), last = i === ev.length - 1 && !TERMINAL.includes(os.status);
+    return `<li><b>${esc(x.acao)}</b> <span class="muted sm">· ${fdt(x.ts)} · ${esc(userN(x.usuario))}</span>${x.obs ? `<div class="sm">${esc(x.obs)}</div>` : ''}${x.para && !TERMINAL.includes(x.para) && x.de !== x.para ? `<div class="sm muted">Permanência em <b>${esc(ET[x.para]?.nome)}</b>: <b ${last ? `data-since="${a}" data-sec="1"` : ''}>${fdur(b - a, last)}</b>${last ? ' (em andamento)' : ''}</div>` : ''}</li>`;
+  }).reverse().join('');
+  const pe = os.pecas && os.pecas.itens ? `<div class="alert"><b>Peças — ${esc(FASE[os.pecas.fase] || '')}</b><br>${esc(os.pecas.itens)}${os.pecas.forn ? `<br>Fornecedor: ${esc(os.pecas.forn)}` : ''}${os.pecas.previsao ? `<br>Previsão: ${fd(os.pecas.previsao)}` : ''}</div>` : '';
+  modal(`<div class="mh"><div><h3>${esc(os.numero)} <span class="tag" style="background:${e.cor};color:#fff">${esc(e.nome)}</span> <span class="tag ${os.criticidade}">${CRIT[os.criticidade] || ''}</span> ${os.tipoMan === 'preventiva' ? '<span class="tag prev">Preventiva</span>' : ''}</h3><div class="muted sm">Aberta em ${fdt(os.criadoEm)} por ${esc(userN(os.criadoPor))}</div></div><button data-act="close">×</button></div>
+  <div class="timers">
+    <div class="${sl && !sl.closed ? sl.state : ''}"><span class="sm muted">⏱ Tempo total ${TERMINAL.includes(os.status) ? '(final)' : '(parado)'}</span><b ${cls ? `data-since="${t.first}" data-sec="1"` : ''}>${fdur(t.total, true)}</b></div>
+    ${!TERMINAL.includes(os.status) ? `<div><span class="sm muted">Etapa atual: ${esc(e.nome)}</span><b data-since="${new Date(os.etapaDesde).getTime()}" data-sec="1">${fdur(Date.now() - new Date(os.etapaDesde))}</b></div>` : ''}
+    ${sl ? `<div class="${sl.closed ? '' : sl.state}"><span class="sm muted">SLA ${CRIT[os.criticidade]} (${sla(os.criticidade)}h)</span><b>${sl.closed ? (sl.state === 'ok' ? '✔ cumprido' : '✖ estourado') : (sl.pct >= 1 ? 'Estourado +' + fdur(sl.el - sl.lim) : 'Resta ' + fdur(sl.lim - sl.el))}</b></div>` : ''}
+  </div>
+  ${pe}
+  <div class="facts"><div><small>Equipamento</small>${esc(os.descricao)}</div><div><small>Patrimônio / Série</small>${esc(os.patrimonio)} / ${esc(os.serie || '—')}</div><div><small>Tipo · Seção</small>${esc(os.tipo)}${os.secao ? ' · ' + esc(os.secao) : ''}</div><div><small>Loja de origem</small>${esc(lojaN(os.lojaOrigem))}</div>
+  <div><small>Atendimento</small>${os.atendimento === 'local' ? 'Na própria loja' : os.atendimento === 'transferir' ? 'Transferido p/ ' + esc(lojaN(os.lojaDestino)) : os.atendimento === 'terceiro' ? 'Terceirizado: ' + esc(fornN(os.fornecedorId)) : 'A definir'}</div><div><small>Técnico</small>${esc(userN(os.tecnicoId))}</div>
+  ${os.previsao ? `<div><small>Previsão</small>${fd(os.previsao)}</div>` : ''}<div><small>Custo (peças + MO)</small>${brl(os.custoPecas)} + ${brl(os.custoMO)} = <b>${brl(custo(os))}</b></div>${os.nf ? `<div><small>NF / laudo</small>${esc(os.nf)}</div>` : ''}</div>
+  <p><b>Problema:</b> ${esc(os.problema)}</p>${os.diagnostico ? `<p><b>Causa / diagnóstico:</b> ${esc(os.diagnostico)}</p>` : ''}${os.solucao ? `<p><b>Solução:</b> ${esc(os.solucao)}</p>` : ''}
+  ${(os.fotos || []).length ? `<div class="thumbs">${os.fotos.map(f => `<a href="${esc(f.url)}" target="_blank" rel="noopener"><img src="${esc(f.url)}" title="${esc(ET[f.etapa]?.nome || '')} · ${fdt(f.ts)}"></a>`).join('')}</div>` : ''}
+  <div class="acts">${acoes.map(a => `<button class="btn ${a === 'comentar' ? '' : a === 'cancelar' ? 'red sm' : 'pri'}" data-act="acao" data-os="${esc(num)}" data-a="${a}">${esc(ACAO_LABEL[a] ? ACAO_LABEL[a](os) : ACOES[a].t)}</button>`).join('')}<button class="btn" data-act="ficha" data-os="${esc(num)}">🖨 Imprimir ficha</button></div>
+  <h3 style="font-size:14px">Linha do tempo e permanência por etapa</h3><ul class="tl" style="padding-left:14px">${timeline}</ul>`, 1);
+}
+function abrirAcao(num, a, doCard) {
+  const os = S.os.find(x => x.numero === num), A = ACOES[a];
+  openForm({ titulo: (ACAO_LABEL[a] ? ACAO_LABEL[a](os) : A.t) + ' — ' + num, campos: A.campos(os), ok: 'Confirmar', onSubmit: async f => { await execAcao(os, a, f); if (doCard) { closeModal(); const n = S.os.find(x => x.numero === num); toast(num + ' → ' + ET[n.status].nome); } else { toast('Atualizado'); detalhe(num); } } });
+}
+function ficha(num) {
+  const os = S.os.find(o => o.numero === num), t = tempos(os);
+  $('#printArea').innerHTML = `<h1>Ordem de Serviço ${esc(os.numero)} — Rede Nilo</h1><table><tr><td><b>Equipamento</b><br>${esc(os.descricao)}</td><td><b>Patrimônio / Série</b><br>${esc(os.patrimonio)} / ${esc(os.serie || '—')}</td><td><b>Loja</b><br>${esc(lojaN(os.lojaOrigem))}</td></tr><tr><td><b>Tipo</b><br>${esc(os.tipoMan)} · ${esc(os.tipo)}</td><td><b>Criticidade</b><br>${CRIT[os.criticidade]} (SLA ${sla(os.criticidade)}h)</td><td><b>Status</b><br>${esc(ET[os.status].nome)}</td></tr><tr><td colspan="3"><b>Problema</b><br>${esc(os.problema)}<br><b>Causa:</b> ${esc(os.diagnostico || '')}<br><b>Solução:</b> ${esc(os.solucao || '')}</td></tr><tr><td><b>Atendimento</b><br>${esc(os.atendimento === 'transferir' ? 'Transferência: ' + lojaN(os.lojaDestino) : os.atendimento === 'terceiro' ? fornN(os.fornecedorId) : os.atendimento === 'local' ? 'Na loja' : '—')}</td><td><b>Técnico</b><br>${esc(userN(os.tecnicoId))}</td><td><b>Custo</b><br>${brl(custo(os))}</td></tr></table><h3>Histórico</h3><table>${(S.hb[num] || []).map(h => `<tr><td>${fdt(h.ts)}</td><td>${esc(h.acao)}</td><td>${esc(h.obs)}</td><td>${esc(userN(h.usuario))}</td></tr>`).join('')}</table><p>Tempo total: <b>${fdur(t.total)}</b></p><br><br><table><tr><td style="height:60px">Responsável pela loja</td><td>Técnico / fornecedor</td></tr></table>`;
+  document.body.classList.add('pf'); window.print(); setTimeout(() => document.body.classList.remove('pf'), 500);
+}
+
+/* ---------- views ---------- */
+function filtradas(todas) {
+  const f = S.f, q = f.q.toLowerCase();
+  return S.os.filter(o => (todas || !TERMINAL.includes(o.status)) && (!f.loja || o.lojaOrigem === f.loja || o.lojaDestino === f.loja) && (!f.tec || o.tecnicoId === f.tec) && (!f.man || o.tipoMan === f.man) &&
+    (!q || [o.numero, o.patrimonio, o.descricao, o.serie, o.problema].join(' ').toLowerCase().includes(q)));
+}
+function filtros(extra = '') {
+  const lojas = S.lojas.filter(l => minhasLojas().includes(l.id));
+  return `<div class="bar noprint"><select data-f="loja"><option value="">Todas as lojas</option>${lojas.map(l => `<option value="${l.id}"${S.f.loja === l.id ? ' selected' : ''}>${esc(l.nome)}</option>`).join('')}</select>
+  ${isM() ? `<select data-f="tec"><option value="">Todos os técnicos</option>${tecnicosOpts().map(t => `<option value="${t.v}"${S.f.tec === t.v ? ' selected' : ''}>${esc(t.l)}</option>`).join('')}</select>` : ''}
+  <select data-f="man"><option value="">Corretiva + preventiva</option><option value="corretiva"${S.f.man === 'corretiva' ? ' selected' : ''}>Corretiva</option><option value="preventiva"${S.f.man === 'preventiva' ? ' selected' : ''}>Preventiva</option></select>
+  <input data-f="q" class="grow" placeholder="Buscar OS, patrimônio, equipamento…" value="${esc(S.f.q)}">${extra}</div>`;
+}
+const PROX = { aberta: { a: 'iniciar', l: 'Iniciar diagnóstico' }, diagnostico: { a: 'definir', l: 'Registrar diagnóstico' }, transito: { a: 'receber', l: 'Acusar recebimento' }, manutencao: { a: 'concluir', l: 'Concluir' }, pecas: { a: 'retomar', l: 'Peças recebidas' }, concluida: { a: 'disponibilizar', l: 'Disponibilizar' }, disponivel: { a: 'encerrar', l: 'Confirmar retorno' } };
+function cardHtml(o) {
+  const tp = tempos(o);
+  return `<div class="card none" data-act="det" data-os="${esc(o.numero)}"><div class="t"><span class="n">${esc(o.numero)}</span><span>${o.tipoMan === 'preventiva' ? '<span class="tag prev">Prev.</span> ' : ''}<span class="tag ${o.criticidade}">${CRIT[o.criticidade]}</span></span></div>
+  <div class="d">${esc(o.descricao)}</div><div class="m">Pat. ${esc(o.patrimonio)} · ${esc(lojaN(o.lojaOrigem))}${o.lojaDestino ? ' → ' + esc(lojaN(o.lojaDestino)) : ''}${o.atendimento === 'terceiro' ? ' → ' + esc(fornN(o.fornecedorId)) : ''}</div>
+  <div class="m">${o.tecnicoId ? '👤 ' + esc(userN(o.tecnicoId)) : '<b style="color:var(--red)">Sem técnico</b>'}${o.pecas && o.pecas.fase && o.status === 'pecas' ? ' · ' + esc(FASE[o.pecas.fase]) : ''}</div>
+  <div class="chrono"><span>⏱ Total <b ${TERMINAL.includes(o.status) ? '' : `data-since="${tp.first}"`}>${fdur(tp.total)}</b></span></div>
+  <div class="stg">${ETAPAS.filter(x => tp.por[x.id] !== undefined).map(x => { const cur = x.id === o.status; return `<span class="${cur ? 'cur' : ''}" style="--c:${x.cor}">${esc(x.nome)} <b ${cur ? `data-since="${Date.now() - tp.por[x.id]}"` : ''}>${fdur(tp.por[x.id])}</b></span>`; }).join('')}</div>
+  ${(() => { const px = PROX[o.status]; if (!px || !pode(o, px.a)) return ''; const alt = o.status === 'manutencao' && pode(o, 'pecas') ? `<button class="btn sm" data-act="avancar" data-os="${esc(o.numero)}" data-a="pecas" title="Aguardar peças">Peças</button>` : ''; return `<div class="cardacts">${alt}<button class="btn sm pri" data-act="avancar" data-os="${esc(o.numero)}" data-a="${px.a}">Avançar ▸ ${esc(px.l)}</button></div>`; })()}</div>`;
+}
+function vKanban() {
+  const L = filtradas(false), all = S.os.filter(o => !TERMINAL.includes(o.status)), crit = all.filter(o => o.criticidade === 'alta' && o.tipoMan === 'corretiva');
+  const late = all.filter(o => { const s = slaInfo(o); return s && s.state === 'late'; });
+  return `<div class="kpis"><div class="kpi"><div class="v">${all.length}</div><div class="l">OS em aberto</div></div><div class="kpi ${late.length ? 'bad' : 'good'}"><div class="v">${late.length}</div><div class="l">SLA estourado</div></div><div class="kpi ${crit.length ? 'bad' : ''}"><div class="v">${crit.length}</div><div class="l">Equip. críticos parados</div></div><div class="kpi"><div class="v">${all.filter(o => o.status === 'pecas').length}</div><div class="l">Aguardando peças</div></div><div class="kpi"><div class="v">${all.filter(o => o.status === 'transito').length}</div><div class="l">Em trânsito</div></div></div>
+  ${filtros('<button class="btn pri" data-act="nova">＋ Nova OS</button>')}
+  <div class="board">${KANBAN.map(id => { const c = L.filter(o => o.status === id).sort((a, b) => (slaInfo(b)?.pct || 0) - (slaInfo(a)?.pct || 0)); return `<div class="col"><h3 style="--c:${ET[id].cor}">${ET[id].nome}<span>${c.length}</span></h3><div class="cards">${c.map(cardHtml).join('') || '<div class="muted sm" style="padding:8px">—</div>'}</div></div>`; }).join('')}</div>`;
+}
+function vLista() {
+  const L = filtradas(true).filter(o => S.f.st === 'todas' || (S.f.st === 'abertas') === !TERMINAL.includes(o.status)).sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm));
+  return filtros(`<select data-f="st"><option value="abertas"${S.f.st === 'abertas' ? ' selected' : ''}>Em aberto</option><option value="encerradas"${S.f.st === 'encerradas' ? ' selected' : ''}>Encerradas/canceladas</option><option value="todas"${S.f.st === 'todas' ? ' selected' : ''}>Todas</option></select><button class="btn pri" data-act="nova">＋ Nova OS</button>`) +
+    `<div class="tw"><table><tr><th>OS</th><th>Abertura</th><th>Equipamento</th><th>Loja</th><th>Tipo</th><th>Crit.</th><th>Etapa</th><th>Técnico</th><th>Tempo total</th><th>SLA</th><th class="right">Custo</th></tr>${L.map(o => { const t = tempos(o), s = slaInfo(o); return `<tr class="row" data-act="det" data-os="${esc(o.numero)}"><td class="b">${esc(o.numero)}</td><td>${fdt(o.criadoEm)}</td><td>${esc(o.descricao)}<br><span class="sm muted">${esc(o.patrimonio)}</span></td><td>${esc(lojaN(o.lojaOrigem))}</td><td>${o.tipoMan === 'preventiva' ? 'Preventiva' : 'Corretiva'}</td><td><span class="tag ${o.criticidade}">${CRIT[o.criticidade]}</span></td><td>${esc(ET[o.status].nome)}</td><td>${esc(userN(o.tecnicoId))}</td><td>${fdur(t.total)}</td><td>${s ? (s.closed ? (s.state === 'ok' ? '✔' : '✖') : `<i class="dot ${s.state}"></i>`) : '—'}</td><td class="right">${brl(custo(o))}</td></tr>`; }).join('') || '<tr><td colspan="11" class="muted">Nenhuma OS.</td></tr>'}</table></div>`;
+}
+
+/* equipamentos */
+function eqStats(e) {
+  const lim = Date.now() - 365 * D, os = S.os.filter(o => o.equipId === e.id && o.status !== 'cancelada'), c12 = os.filter(o => o.tipoMan === 'corretiva' && new Date(o.criadoEm) >= lim);
+  const custo12 = c12.reduce((s, o) => s + custo(o), 0), pct = +e.valorReposicao ? custo12 / +e.valorReposicao : 0;
+  const pl = S.planos.filter(p => p.equipId === e.id && p.ativo !== 'nao').sort((a, b) => a.proxima.localeCompare(b.proxima))[0];
+  return { os, n12: c12.length, custo12, pct, subst: pct > .5, recor: c12.length >= 3, plano: pl, garantia: e.garantiaAte ? (new Date(e.garantiaAte) - Date.now()) / D : null };
+}
+function vEquip() {
+  const q = (S.f.q || '').toLowerCase();
+  const L = S.equips.filter(e => e.ativo !== 'nao' && minhasLojas().includes(e.lojaId) && (!S.f.loja || e.lojaId === S.f.loja) && (!q || [e.patrimonio, e.serie, e.descricao, e.tipo].join(' ').toLowerCase().includes(q)));
+  return `<div class="alert">Regra de substituição (Plano de Manutenção): quando o custo acumulado de manutenção corretiva em 12 meses superar <b>50% do valor de reposição</b>, acionar análise formal de substituição. Informe o valor de reposição de cada equipamento.</div>` +
+    filtros(`<button class="btn pri" data-act="neweq">＋ Equipamento</button><button class="btn" data-act="import">⬆ Importar CSV</button><button class="btn" data-act="tplcsv">Modelo CSV</button>`) +
+    `<div class="tw"><table><tr><th>Patrimônio</th><th>Equipamento</th><th>Tipo</th><th>Loja</th><th>Crit.</th><th>OS corret. 12m</th><th class="right">Custo corret. 12m</th><th class="right">Valor reposição</th><th>% repos.</th><th>Próx. preventiva</th><th>Alertas</th></tr>${L.map(e => { const s = eqStats(e); return `<tr class="row" data-act="eq" data-id="${e.id}"><td class="b">${esc(e.patrimonio)}</td><td>${esc(e.descricao)}<br><span class="sm muted">Série ${esc(e.serie || '—')}</span></td><td>${esc(e.tipo)}</td><td>${esc(lojaN(e.lojaId))}</td><td><span class="tag ${e.criticidade}">${CRIT[e.criticidade] || '—'}</span></td><td>${s.n12}</td><td class="right">${brl(s.custo12)}</td><td class="right">${+e.valorReposicao ? brl(e.valorReposicao) : '<span class="muted">—</span>'}</td><td>${+e.valorReposicao ? Math.round(s.pct * 100) + '%' : '—'}</td><td>${s.plano ? fd(s.plano.proxima) : '<span class="muted">sem plano</span>'}</td><td>${s.subst ? '<span class="tag flag">Analisar substituição</span> ' : ''}${s.recor ? '<span class="tag am">Recorrente</span> ' : ''}${s.garantia !== null ? (s.garantia < 0 ? '<span class="tag">Garantia vencida</span>' : s.garantia <= 30 ? '<span class="tag am">Garantia vence em ' + Math.ceil(s.garantia) + 'd</span>' : '') : ''}</td></tr>`; }).join('') || '<tr><td colspan="11" class="muted">Nenhum equipamento cadastrado. Cadastre um a um ou importe o inventário por CSV.</td></tr>'}</table></div>`;
+}
+function eqForm(e = {}) {
+  const lojas = S.lojas.filter(l => minhasLojas().includes(l.id));
+  openForm({
+    titulo: e.id ? 'Editar equipamento' : 'Novo equipamento', grid: 1, wide: 1,
+    campos: [{ k: 'patrimonio', l: 'Nº do patrimônio', req: 1, val: e.patrimonio }, { k: 'serie', l: 'Nº de série', val: e.serie }, { k: 'descricao', l: 'Descrição', req: 1, val: e.descricao }, { k: 'tipo', l: 'Tipo', tipo: 'select', opts: S.config.tipos.map(t => t.nome), req: 1, val: e.tipo, novoTipo: 1 }, { k: 'secao', l: 'Seção', val: e.secao }, { k: 'marca', l: 'Marca / modelo', val: e.marca },
+    { k: 'lojaId', l: 'Loja', tipo: 'select', opts: lojas.map(l => ({ v: l.id, l: l.nome })), req: 1, val: e.lojaId }, { k: 'criticidade', l: 'Criticidade', tipo: 'select', opts: Object.entries(CRIT).map(([v, l]) => ({ v, l })), val: e.criticidade }, { k: 'valorReposicao', l: 'Valor de reposição (R$)', tipo: 'number', val: e.valorReposicao }, { k: 'garantiaAte', l: 'Garantia até', tipo: 'date', val: e.garantiaAte }],
+    after: f => f.elements.tipo.addEventListener('change', () => { if (!f.elements.criticidade.value) f.elements.criticidade.value = tipoCfg(f.elements.tipo.value).crit; }),
+    onSubmit: async v => {
+      if (!v.criticidade) v.criticidade = tipoCfg(v.tipo).crit;
+      if (S.equips.some(x => x.patrimonio === v.patrimonio && x.id !== e.id)) throw new Error('Patrimônio já cadastrado');
+      await api('saveEntity', { sheet: 'Equipamentos', row: { ...e, ...v, ativo: 'sim' } }); delete v._fotos; await carregar(); render(); closeModal(); toast('Equipamento salvo');
+    }
+  });
+}
+function eqDetalhe(id) {
+  const e = equipOf(id), s = eqStats(e), os = s.os.sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm));
+  const inat = os.filter(o => o.tipoMan === 'corretiva').reduce((a, o) => a + tempos(o).total, 0);
+  modal(`<div class="mh"><h3>${esc(e.descricao)} <span class="tag ${e.criticidade}">${CRIT[e.criticidade]}</span></h3><button data-act="close">×</button></div>
+  <div class="facts"><div><small>Patrimônio / Série</small>${esc(e.patrimonio)} / ${esc(e.serie || '—')}</div><div><small>Tipo · Seção</small>${esc(e.tipo)} · ${esc(e.secao || '—')}</div><div><small>Loja</small>${esc(lojaN(e.lojaId))}</div><div><small>Custo corretivo 12m</small>${brl(s.custo12)} ${+e.valorReposicao ? '(' + Math.round(s.pct * 100) + '% da reposição)' : ''}</div><div><small>Inatividade acumulada</small>${fdur(inat)}</div><div><small>Garantia até</small>${fd(e.garantiaAte)}</div></div>
+  ${s.subst ? '<div class="alert red"><b>Analisar substituição:</b> custo corretivo em 12 meses acima de 50% do valor de reposição.</div>' : ''}${s.recor ? '<div class="alert"><b>Falha recorrente:</b> 3 ou mais corretivas em 12 meses — avaliar causa raiz.</div>' : ''}
+  <div class="acts"><button class="btn pri" data-act="nova-eq" data-id="${id}">Abrir OS corretiva</button><button class="btn" data-act="plano-eq" data-id="${id}">${s.plano ? 'Editar' : 'Criar'} plano preventivo</button><button class="btn" data-act="edit-eq" data-id="${id}">Editar cadastro</button></div>
+  ${s.plano ? `<p>Plano preventivo: a cada <b>${s.plano.freqDias} dias</b> · última ${fd(s.plano.ultima)} · próxima <b>${fd(s.plano.proxima)}</b></p>` : ''}
+  <h3 style="font-size:14px">Histórico de intervenções</h3><div class="tw"><table><tr><th>OS</th><th>Data</th><th>Tipo</th><th>Causa / solução</th><th>Responsável</th><th>Inatividade</th><th class="right">Custo</th></tr>${os.map(o => `<tr class="row" data-act="det" data-os="${esc(o.numero)}"><td class="b">${esc(o.numero)}</td><td>${fd(o.criadoEm)}</td><td>${o.tipoMan === 'preventiva' ? 'Preventiva' : 'Corretiva'}</td><td>${esc(o.diagnostico || o.problema)}${o.solucao ? '<br><span class="sm muted">→ ' + esc(o.solucao) + '</span>' : ''}</td><td>${esc(o.atendimento === 'terceiro' ? fornN(o.fornecedorId) : userN(o.tecnicoId))}</td><td>${fdur(tempos(o).total)}</td><td class="right">${brl(custo(o))}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">Sem intervenções registradas.</td></tr>'}</table></div>`, 1);
+}
+function planoForm(e) {
+  const pl = S.planos.find(p => p.equipId === e.id) || {}, def = tipoCfg(e.tipo);
+  openForm({
+    titulo: 'Plano preventivo — ' + e.descricao, campos: [{ k: 'descricao', l: 'O que será executado', tipo: 'textarea', req: 1, val: pl.descricao || 'Revisão preventiva conforme plano do grupo' }, { k: 'freqDias', l: 'Frequência (dias)', tipo: 'number', req: 1, val: pl.freqDias || def.freq }, { k: 'proxima', l: 'Próxima execução', tipo: 'date', req: 1, val: pl.proxima || dayISO(Date.now() + def.freq * D) }],
+    onSubmit: async v => { await api('saveEntity', { sheet: 'Planos', row: { ...pl, equipId: e.id, descricao: v.descricao, freqDias: +v.freqDias, ultima: pl.ultima || '', proxima: v.proxima, ativo: 'sim' } }); await carregar(); render(); closeModal(); toast('Plano salvo'); }
+  });
+}
+function csvParse(txt) {
+  const sep = txt.split('\n')[0].includes(';') ? ';' : ',', rows = txt.replace(/\r/g, '').split('\n').filter(x => x.trim()).map(l => l.split(sep).map(c => c.trim().replace(/^"|"$/g, '')));
+  const h = rows.shift().map(x => x.toLowerCase()); return rows.map(r => Object.fromEntries(h.map((k, i) => [k, r[i] || ''])));
+}
+function importar() {
+  modal(`<div class="mh"><h3>Importar inventário (CSV)</h3><button data-act="close">×</button></div><p class="muted sm">Colunas: <b>patrimonio;serie;descricao;tipo;secao;marca;loja;valorreposicao;garantiaate</b>. "loja" = código (1, 2, 5, 7, 8, 9, 10) ou nome. Tipo deve existir na lista de tipos; criticidade é definida pelo tipo.</p><input type="file" id="csvf" accept=".csv,.txt"><div id="csvr" class="sm" style="margin-top:8px"></div>`);
+  $('#csvf').onchange = async e => {
+    const rows = csvParse(await e.target.files[0].text()); let ok = 0, err = [];
+    for (const [i, r] of rows.entries()) {
+      const lj = S.lojas.find(l => l.codigo === r.loja || l.nome.toLowerCase() === (r.loja || '').toLowerCase()), t = S.config.tipos.find(x => x.nome.toLowerCase() === (r.tipo || '').toLowerCase());
+      if (!r.patrimonio || !lj || !minhasLojas().includes(lj.id)) { err.push(`Linha ${i + 2}: patrimônio/loja inválido`); continue; }
+      if (S.equips.some(x => x.patrimonio === r.patrimonio)) { err.push(`Linha ${i + 2}: patrimônio ${r.patrimonio} já existe`); continue; }
+      await api('saveEntity', { sheet: 'Equipamentos', row: { patrimonio: r.patrimonio, serie: r.serie, descricao: r.descricao, tipo: t ? t.nome : 'Outro', secao: r.secao, marca: r.marca, lojaId: lj.id, criticidade: t ? t.crit : 'baixa', valorReposicao: +String(r.valorreposicao).replace(',', '.') || 0, garantiaAte: r.garantiaate, ativo: 'sim' } }); ok++;
+    }
+    await carregar(); render(); modal(`<div class="mh"><h3>Importação concluída</h3><button data-act="close">×</button></div><p><b>${ok}</b> equipamentos importados.</p>${err.length ? `<div class="alert red">${err.map(esc).join('<br>')}</div>` : ''}`);
+  };
+}
+
+/* preventiva */
+function planoStatus(p) { const d = (new Date(p.proxima) - Date.now()) / D; return d < 0 ? { c: 'late', t: 'Atrasada ' + Math.ceil(-d) + 'd' } : d <= 7 ? { c: 'warn', t: 'Vence em ' + Math.ceil(d) + 'd' } : { c: 'ok', t: 'Em dia' }; }
+function vPrev() {
+  const L = S.planos.filter(p => p.ativo !== 'nao').map(p => ({ p, e: equipOf(p.equipId) })).filter(x => x.e && minhasLojas().includes(x.e.lojaId) && (!S.f.loja || x.e.lojaId === S.f.loja)).sort((a, b) => a.p.proxima.localeCompare(b.p.proxima));
+  const atr = L.filter(x => planoStatus(x.p).c === 'late').length, sem = S.equips.filter(e => e.ativo !== 'nao' && minhasLojas().includes(e.lojaId) && !S.planos.some(p => p.equipId === e.id)).length;
+  const mes = new Date(); mes.setDate(1); mes.setHours(0, 0, 0, 0);
+  const exec = S.os.filter(o => o.tipoMan === 'preventiva' && o.status !== 'cancelada' && tempos(o).concTs && tempos(o).concTs >= mes.getTime()).length;
+  const prog = exec + L.filter(x => new Date(x.p.proxima) >= mes && new Date(x.p.proxima) < new Date(mes.getFullYear(), mes.getMonth() + 1, 1) || planoStatus(x.p).c === 'late').length;
+  return `<div class="kpis"><div class="kpi ${atr ? 'bad' : 'good'}"><div class="v">${atr}</div><div class="l">Preventivas atrasadas</div></div><div class="kpi"><div class="v">${prog ? Math.round(exec / prog * 100) + '%' : '—'}</div><div class="l">Executadas no mês</div><div class="s">${exec} de ${prog} programadas</div></div><div class="kpi"><div class="v">${L.length}</div><div class="l">Planos ativos</div></div><div class="kpi ${sem ? 'bad' : ''}"><div class="v">${sem}</div><div class="l">Equip. sem plano</div></div></div>
+  <div class="bar noprint"><select data-f="loja"><option value="">Todas as lojas</option>${S.lojas.filter(l => minhasLojas().includes(l.id)).map(l => `<option value="${l.id}"${S.f.loja === l.id ? ' selected' : ''}>${esc(l.nome)}</option>`).join('')}</select>${isM() && sem ? '<button class="btn" data-act="genplanos">⚙ Gerar planos padrão p/ equipamentos sem plano</button>' : ''}</div>
+  <div class="tw"><table><tr><th>Situação</th><th>Equipamento</th><th>Loja</th><th>Crit.</th><th>O que executar</th><th>Frequência</th><th>Última</th><th>Próxima</th><th></th></tr>${L.map(({ p, e }) => { const st = planoStatus(p), aberta = S.os.find(o => o.planoId === p.id && !TERMINAL.includes(o.status)); return `<tr><td><i class="dot ${st.c}"></i> ${st.t}</td><td class="b">${esc(e.descricao)}<br><span class="sm muted">${esc(e.patrimonio)}</span></td><td>${esc(lojaN(e.lojaId))}</td><td><span class="tag ${e.criticidade}">${CRIT[e.criticidade]}</span></td><td>${esc(p.descricao)}</td><td>${p.freqDias}d</td><td>${fd(p.ultima)}</td><td>${fd(p.proxima)}</td><td>${aberta ? `<button class="btn sm" data-act="det" data-os="${esc(aberta.numero)}">${esc(aberta.numero)}</button>` : `<button class="btn sm pri" data-act="os-plano" data-id="${p.id}">Abrir OS preventiva</button>`}</td></tr>`; }).join('') || '<tr><td colspan="9" class="muted">Nenhum plano. Crie pelo cadastro do equipamento ou gere os planos padrão.</td></tr>'}</table></div>`;
+}
+
+/* indicadores */
+function periodo() { const to = S.f.ate ? new Date(S.f.ate + 'T23:59:59').getTime() : Date.now(), from = S.f.de ? new Date(S.f.de + 'T00:00:00').getTime() : to - 90 * D; return [from, to]; }
+function overlap(a1, a2, b1, b2) { return Math.max(0, Math.min(a2, b2) - Math.max(a1, b1)); }
+function calcInd() {
+  const [from, to] = periodo(), horas = (to - from) / H;
+  const lojas = S.lojas.filter(l => minhasLojas().includes(l.id) && (!S.f.loja || l.id === S.f.loja));
+  const ids = new Set(lojas.map(l => l.id)), os = S.os.filter(o => ids.has(o.lojaOrigem) && o.status !== 'cancelada' && new Date(o.criadoEm).getTime() <= to);
+  const downOf = (list) => list.reduce((s, o) => { const t = tempos(o); return s + overlap(t.first, t.fim, from, to); }, 0) / H;
+  const porLoja = lojas.map(l => {
+    const eqC = S.equips.filter(e => e.lojaId === l.id && e.ativo !== 'nao' && e.criticidade === 'alta').length, osL = os.filter(o => o.lojaOrigem === l.id);
+    const down = downOf(osL.filter(o => o.tipoMan === 'corretiva' && o.criticidade === 'alta')), disp = eqC ? Math.max(0, 100 - down / (eqC * horas) * 100) : null;
+    const c = osL.filter(o => new Date(o.criadoEm) >= from);
+    return { l, eqC, disp, cP: c.filter(o => o.tipoMan === 'preventiva').reduce((s, o) => s + custo(o), 0), cC: c.filter(o => o.tipoMan === 'corretiva').reduce((s, o) => s + custo(o), 0), n: c.length };
+  });
+  const inP = os.filter(o => new Date(o.criadoEm) >= from && new Date(o.criadoEm) <= to), cor = inP.filter(o => o.tipoMan === 'corretiva');
+  const encC = cor.filter(o => TERMINAL.includes(o.status) && o.status === 'encerrada'), mttr = encC.length ? encC.reduce((s, o) => s + tempos(o).total, 0) / encC.length : null;
+  const nEq = S.equips.filter(e => ids.has(e.lojaId) && e.ativo !== 'nao').length, downAll = downOf(os.filter(o => o.tipoMan === 'corretiva')), mtbf = cor.length && nEq ? (nEq * horas - downAll) / cor.length * H : null;
+  const sls = cor.map(slaInfo).filter(s => s && (s.closed || s.state === 'late')), slaOk = sls.length ? sls.filter(s => s.state === 'ok').length / sls.length : null;
+  const et = {}, en = {}; inP.forEach(o => { const t = tempos(o).por; Object.entries(t).forEach(([k, v]) => { et[k] = (et[k] || 0) + v; en[k] = (en[k] || 0) + 1; }); });
+  const porTipo = {}; inP.forEach(o => porTipo[o.tipo] = (porTipo[o.tipo] || 0) + 1);
+  const allCrit = porLoja.filter(x => x.disp !== null), dispRede = allCrit.length ? allCrit.reduce((s, x) => s + x.disp * x.eqC, 0) / allCrit.reduce((s, x) => s + x.eqC, 0) : null;
+  return { from, to, horas, porLoja, inP, cor, mttr, mtbf, slaOk, et, en, porTipo, dispRede, cP: porLoja.reduce((s, x) => s + x.cP, 0), cC: porLoja.reduce((s, x) => s + x.cC, 0) };
+}
+function vInd() {
+  const I = calcInd(), df = dayISO(I.from), dt = dayISO(I.to);
+  const k = (v, l, cls = '', s = '') => `<div class="kpi ${cls}"><div class="v">${v}</div><div class="l">${l}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`;
+  return `<div class="bar noprint"><select data-f="loja"><option value="">Todas as lojas</option>${S.lojas.filter(l => minhasLojas().includes(l.id)).map(l => `<option value="${l.id}"${S.f.loja === l.id ? ' selected' : ''}>${esc(l.nome)}</option>`).join('')}</select>De <input type="date" data-f="de" value="${df}"> até <input type="date" data-f="ate" value="${dt}"><span class="grow"></span><button class="btn" data-act="csv">⬇ Exportar CSV</button><button class="btn dark" data-act="print">🖨 Imprimir / PDF</button></div>
+  <div class="kpis">${k(I.dispRede === null ? '—' : I.dispRede.toFixed(1) + '%', 'Disponibilidade — equip. críticos', I.dispRede === null ? '' : I.dispRede >= 95 ? 'good' : 'bad', 'Meta ≥ 95%')}${k(I.mttr === null ? '—' : fdur(I.mttr), 'MTTR (tempo médio de reparo)', '', 'abertura → equipamento de volta')}${k(I.mtbf === null ? '—' : Math.round(I.mtbf / D) + ' dias', 'MTBF (entre falhas)', '', 'horas operantes ÷ nº de falhas')}${k(I.slaOk === null ? '—' : Math.round(I.slaOk * 100) + '%', 'Corretivas dentro do SLA', I.slaOk === null ? '' : I.slaOk >= .9 ? 'good' : 'bad', 'Alta 4h · Média 24h · Baixa 72h')}${k(brl(I.cC), 'Custo corretivo')}${k(brl(I.cP), 'Custo preventivo')}${k(I.inP.length, 'OS no período', '', I.cor.length + ' corretivas')}${k(I.en.pecas ? fdur(I.et.pecas / I.en.pecas) : '—', 'Tempo médio aguardando peças')}</div>
+  <div class="grid2"><div class="panel"><h2>Disponibilidade dos equipamentos críticos por unidade (%)</h2><div class="cv"><canvas id="c1"></canvas></div></div><div class="panel"><h2>Custo de manutenção por unidade (R$)</h2><div class="cv"><canvas id="c2"></canvas></div></div><div class="panel"><h2>Tempo médio por etapa (horas)</h2><div class="cv"><canvas id="c3"></canvas></div></div><div class="panel"><h2>OS por tipo de equipamento</h2><div class="cv"><canvas id="c4"></canvas></div></div></div>
+  <div class="panel"><h2>Permanência na manutenção por OS</h2><div class="tw"><table><tr><th>OS</th><th>Loja</th><th>Equipamento</th><th>Tipo</th><th>Etapa</th><th>Tempo total</th><th>Em manutenção</th><th>Aguard. peças</th><th>Em trânsito</th><th class="right">Custo</th></tr>${I.inP.sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm)).map(o => { const t = tempos(o).por; return `<tr class="row" data-act="det" data-os="${esc(o.numero)}"><td class="b">${esc(o.numero)}</td><td>${esc(lojaN(o.lojaOrigem))}</td><td>${esc(o.descricao)}</td><td>${o.tipoMan === 'preventiva' ? 'Prev.' : 'Corret.'}</td><td>${esc(ET[o.status].nome)}</td><td>${fdur(tempos(o).total)}</td><td>${fdur(t.manutencao || 0)}</td><td>${fdur(t.pecas || 0)}</td><td>${fdur(t.transito || 0)}</td><td class="right">${brl(custo(o))}</td></tr>`; }).join('')}</table></div></div>
+  <p class="muted sm">Fontes: Grupo Nilo, <i>Manutenção Grupo Nilo — Plano de Manutenção e Infraestrutura (7 unidades)</i>, 2026 (indicadores, criticidade, SLA e regra de substituição). Disponibilidade = (horas totais − horas de inatividade das corretivas críticas) ÷ horas totais × 100. Valores calculados a partir das OS registradas.</p>`;
+}
+function charts() {
+  S.charts.forEach(c => c.destroy()); S.charts = [];
+  if (S.view !== 'ind' || typeof Chart === 'undefined') return;
+  const I = calcInd(), mk = (id, cfg) => { const el = $('#' + id); if (el) S.charts.push(new Chart(el, cfg)); }, op = { responsive: true, maintainAspectRatio: false };
+  const nomes = I.porLoja.map(x => x.l.nome.replace('Nilo ', ''));
+  mk('c1', { type: 'bar', data: { labels: nomes, datasets: [{ label: 'Disponibilidade %', data: I.porLoja.map(x => x.disp === null ? null : +x.disp.toFixed(2)), backgroundColor: I.porLoja.map(x => x.disp === null ? '#ccc' : x.disp >= 95 ? '#072772' : '#A61309') }, { type: 'line', label: 'Meta 95%', data: nomes.map(() => 95), borderColor: '#E6A100', borderDash: [6, 4], pointRadius: 0 }] }, options: { ...op, scales: { y: { min: Math.min(80, ...I.porLoja.filter(x => x.disp !== null).map(x => Math.floor(x.disp))), max: 100 } } } });
+  mk('c2', { type: 'bar', data: { labels: nomes, datasets: [{ label: 'Preventivo', data: I.porLoja.map(x => x.cP), backgroundColor: '#F9E109' }, { label: 'Corretivo', data: I.porLoja.map(x => x.cC), backgroundColor: '#A61309' }] }, options: { ...op, scales: { x: { stacked: true }, y: { stacked: true } } } });
+  const ks = ['aberta', 'diagnostico', 'transito', 'manutencao', 'pecas', 'concluida', 'disponivel'];
+  mk('c3', { type: 'bar', data: { labels: ks.map(k => ET[k].nome), datasets: [{ label: 'Horas (média)', data: ks.map(k => I.en[k] ? +(I.et[k] / I.en[k] / H).toFixed(1) : 0), backgroundColor: ks.map(k => ET[k].cor) }] }, options: { ...op, indexAxis: 'y', plugins: { legend: { display: false } } } });
+  const tp = Object.entries(I.porTipo).sort((a, b) => b[1] - a[1]);
+  mk('c4', { type: 'bar', data: { labels: tp.map(x => x[0]), datasets: [{ label: 'OS', data: tp.map(x => x[1]), backgroundColor: '#0C2E84' }] }, options: { ...op, indexAxis: 'y', plugins: { legend: { display: false } } } });
+}
+function exportCSV() {
+  const I = calcInd(), h = ['OS', 'Abertura', 'Loja', 'Patrimônio', 'Equipamento', 'Tipo equip.', 'Manutenção', 'Criticidade', 'Etapa', 'Atendimento', 'Técnico', 'Tempo total (h)', 'Em manutenção (h)', 'Aguardando peças (h)', 'Custo peças', 'Custo MO', 'Custo total', 'Causa', 'Solução'];
+  const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const rows = I.inP.map(o => { const t = tempos(o); return [o.numero, fdt(o.criadoEm), lojaN(o.lojaOrigem), o.patrimonio, o.descricao, o.tipo, o.tipoMan, o.criticidade, ET[o.status].nome, o.atendimento, userN(o.tecnicoId), (t.total / H).toFixed(1), ((t.por.manutencao || 0) / H).toFixed(1), ((t.por.pecas || 0) / H).toFixed(1), o.custoPecas, o.custoMO, custo(o), o.diagnostico, o.solucao].map(q).join(';'); });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + h.map(q).join(';') + '\n' + rows.join('\n')], { type: 'text/csv;charset=utf-8' })); a.download = 'manutencao-nilo-' + dayISO(Date.now()) + '.csv'; a.click();
+}
+
+/* admin */
+function vAdmin() {
+  const us = S.usuarios, cov = {}; S.forn.filter(f => f.homologado === 'sim' && f.ativo !== 'nao').forEach(f => cov[f.especialidade] = (cov[f.especialidade] || 0) + 1);
+  const sem = S.config.tipos.filter(t => t.crit === 'alta' && (cov[t.nome] || 0) < 2);
+  return `<div class="panel"><h2>Usuários e perfis <button class="btn sm pri" data-act="nuser">＋ Usuário</button></h2>${pend() ? `<div class="alert"><b>${pend()} cadastro(s) aguardando autorização.</b> Abra o usuário, defina perfil e lojas e salve com Ativo = Sim.</div>` : ''}<div class="tw"><table><tr><th>Nome</th><th>Usuário</th><th>E-mail</th><th>Perfil</th><th>Lojas</th><th>Ativo</th></tr>${us.map(u => `<tr class="row" data-act="euser" data-id="${u.id}"><td class="b">${esc(u.nome)}</td><td>${esc(u.usuario)}</td><td>${esc(u.email)}</td><td>${esc(u.perfil)}</td><td>${u.lojas === '*' ? 'Todas' : esc(String(u.lojas).split(',').map(lojaN).join(', '))}</td><td>${u.ativo === 'sim' ? 'Sim' : u.ativo === 'pendente' ? '<span class="tag flag">Pendente — autorizar</span>' : 'Não'}${u.bloqueioAte && new Date(u.bloqueioAte) > Date.now() ? ' <span class="tag am">Bloqueado</span>' : ''}</td></tr>`).join('')}</table></div><p class="muted sm">Segurança: 5 senhas erradas bloqueiam o acesso por 15 min (salvar o usuário desbloqueia). Senha definida pelo Master exige troca no primeiro acesso. Para autorizar um cadastro novo, abra a linha, defina perfil e lojas e deixe "Ativo = Sim".</p><p class="muted sm">Master: todas as funções e multi-loja · Técnico: somente OS atribuídas a ele · Loja: abre OS, acusa recebimento e confirma retorno apenas das suas lojas.</p></div>
+  <div class="panel"><h2>Unidades <button class="btn sm pri" data-act="nloja">＋ Unidade</button></h2><div class="tw"><table><tr><th>Código</th><th>Unidade</th><th>Polo de manutenção</th><th>Ativa</th></tr>${S.lojas.map(l => `<tr class="row" data-act="eloja" data-id="${l.id}"><td>${esc(l.codigo)}</td><td class="b">${esc(l.nome)}</td><td>${l.polo === 'sim' ? 'Sim' : '—'}</td><td>${l.ativo === 'nao' ? 'Não' : 'Sim'}</td></tr>`).join('')}</table></div></div>
+  <div class="panel"><h2>Fornecedores homologados <button class="btn sm pri" data-act="nforn">＋ Fornecedor</button></h2>${sem.length ? `<div class="alert red"><b>Cobertura insuficiente:</b> o plano exige ao menos 2 fornecedores homologados por especialidade crítica. Faltam: ${sem.map(t => esc(t.nome) + ' (' + (cov[t.nome] || 0) + ')').join('; ')}.</div>` : ''}<div class="tw"><table><tr><th>Fornecedor</th><th>Especialidade</th><th>Contato</th><th>Região</th><th>SLA (h)</th><th>Homologado</th><th>Contrato até</th></tr>${S.forn.map(f => { const dias = f.contratoAte ? (new Date(f.contratoAte) - Date.now()) / D : null; return `<tr class="row" data-act="eforn" data-id="${f.id}"><td class="b">${esc(f.nome)}</td><td>${esc(f.especialidade)}</td><td>${esc(f.contato)}</td><td>${esc(f.regiao)}</td><td>${esc(f.slaHoras)}</td><td>${f.homologado === 'sim' ? 'Sim' : 'Não'}</td><td>${fd(f.contratoAte)}${dias !== null && dias <= 30 ? ' <span class="tag flag">' + (dias < 0 ? 'vencido' : 'vence em ' + Math.ceil(dias) + 'd') + '</span>' : ''}</td></tr>`; }).join('') || '<tr><td colspan="7" class="muted">Nenhum fornecedor cadastrado.</td></tr>'}</table></div></div>
+  <div class="panel"><h2>SLA por criticidade e tipos de equipamento</h2><form id="cfgf"><div class="fgrid" style="max-width:560px">${['alta', 'media', 'baixa'].map(c => `<div class="fld"><label>SLA criticidade ${CRIT[c]} (horas)</label><input type="number" name="${c}" min="1" value="${sla(c)}"></div>`).join('')}</div><div class="fld"><label>Tipos de equipamento (um por linha: nome ; criticidade (alta/media/baixa) ; frequência preventiva em dias)</label><textarea name="tipos" style="min-height:200px">${S.config.tipos.map(t => `${t.nome} ; ${t.crit} ; ${t.freq}`).join('\n')}</textarea></div><button class="btn pri" type="submit">Salvar configurações</button></form></div>
+  ${CONFIG.API_URL ? '' : '<div class="panel"><h2>Modo demonstração</h2><p class="muted sm">Os dados ficam apenas neste navegador. Para usar de verdade, publique o Code.gs e cole a URL em CONFIG.API_URL.</p><button class="btn red" data-act="reset">Restaurar dados de exemplo</button></div>'}`;
+}
+function userForm(u = {}) {
+  openForm({
+    titulo: u.ativo === 'pendente' ? 'Autorizar cadastro' : u.id ? 'Editar usuário' : 'Novo usuário', grid: 1,
+    campos: [{ k: 'nome', l: 'Nome', req: 1, val: u.nome }, { k: 'usuario', l: 'Usuário (login)', req: 1, val: u.usuario }, { k: 'email', l: 'E-mail (notificações)', tipo: 'email', val: u.email }, { k: 'perfil', l: 'Perfil', tipo: 'select', req: 1, val: u.perfil, opts: [{ v: 'master', l: 'Master (todas as lojas)' }, { v: 'tecnico', l: 'Técnico (somente OS atribuídas)' }, { v: 'loja', l: 'Loja (gerente/encarregado)' }] },
+    { k: 'lojas', l: 'Lojas (use * para todas; várias separadas por vírgula = códigos abaixo)', val: u.lojas === '*' ? '*' : String(u.lojas || '').split(',').map(id => (S.lojas.find(l => l.id === id) || {}).codigo).filter(Boolean).join(',') }, { k: 'ativo', l: 'Ativo', tipo: 'select', opts: [{ v: 'sim', l: 'Sim' }, { v: 'nao', l: 'Não' }], val: u.ativo === 'pendente' ? 'sim' : (u.ativo || 'sim'), req: 1 }, { k: 'senha', l: u.id ? 'Nova senha provisória (deixe vazio para manter — o usuário terá de trocá-la no 1º acesso)' : 'Senha provisória (o usuário terá de trocá-la no 1º acesso)', tipo: 'password', req: !u.id }],
+    sub: 'Códigos das unidades: ' + S.lojas.map(l => `${l.codigo}=${esc(l.nome)}`).join(' · '),
+    onSubmit: async v => {
+      const lojas = v.lojas.trim() === '*' || v.perfil === 'master' ? '*' : v.lojas.split(',').map(c => (S.lojas.find(l => l.codigo === c.trim()) || {}).id).filter(Boolean).join(',');
+      if (!lojas && v.perfil !== 'tecnico') throw new Error('Informe ao menos uma loja');
+      const row = { ...u, nome: v.nome, usuario: v.usuario, email: v.email, perfil: v.perfil, lojas: lojas || '*', ativo: v.ativo };
+      if (v.senha) { if (!senhaOk(v.senha)) throw new Error(REGRA); row.novoHash = await sha(v.usuario, v.senha); }
+      await api('saveEntity', { sheet: 'Usuarios', row }); await carregar(); render(); closeModal(); toast('Usuário salvo');
+    }
+  });
+}
+function simpleForm(titulo, sheet, row, campos) { openForm({ titulo, campos, grid: 1, onSubmit: async v => { delete v._fotos; await api('saveEntity', { sheet, row: { ...row, ...v } }); await carregar(); render(); closeModal(); toast('Salvo'); } }); }
+
+/* ---------- senhas ---------- */
+const senhaOk = s => s.length >= 8 && /[A-Za-z]/.test(s) && /\d/.test(s);
+const REGRA = 'Mínimo de 8 caracteres, com letras e números.';
+function cadastroForm() {
+  openForm({
+    titulo: 'Solicitar acesso', sub: 'Seu cadastro ficará pendente até a autorização de um usuário Master, que também definirá seu perfil e suas lojas. ' + REGRA,
+    campos: [{ k: 'nome', l: 'Nome completo', req: 1 }, { k: 'email', l: 'E-mail', tipo: 'email', req: 1 }, { k: 'usuario', l: 'Usuário (login)', req: 1 }, { k: 'senha', l: 'Senha', tipo: 'password', req: 1 }, { k: 'conf', l: 'Confirmar senha', tipo: 'password', req: 1 }], ok: 'Solicitar acesso',
+    onSubmit: async v => {
+      if (v.senha !== v.conf) throw new Error('As senhas não conferem'); if (!senhaOk(v.senha)) throw new Error(REGRA);
+      await api('register', { nome: v.nome, email: v.email, usuario: v.usuario.trim(), hash: await sha(v.usuario.trim(), v.senha) });
+      closeModal(); toast('Cadastro enviado. Aguarde a autorização do Master.');
+    }
+  });
+}
+function esqueciForm() {
+  openForm({
+    titulo: 'Esqueci minha senha', sub: 'Enviaremos um código de 6 dígitos para o e-mail cadastrado (válido por 30 minutos).', campos: [{ k: 'usuario', l: 'Usuário (login)', req: 1 }], ok: 'Enviar código',
+    onSubmit: async v => {
+      const r = await api('forgot', { usuario: v.usuario.trim() }); const us = v.usuario.trim();
+      toast(!CONFIG.API_URL && r.codigoDemo ? 'DEMO — seu código: ' + r.codigoDemo : 'Se o usuário existir, o código foi enviado ao e-mail cadastrado.');
+      openForm({
+        titulo: 'Redefinir senha', sub: 'Informe o código recebido e defina a nova senha. ' + REGRA, campos: [{ k: 'codigo', l: 'Código recebido', req: 1 }, { k: 'senha', l: 'Nova senha', tipo: 'password', req: 1 }, { k: 'conf', l: 'Confirmar nova senha', tipo: 'password', req: 1 }], ok: 'Redefinir',
+        onSubmit: async w => {
+          if (w.senha !== w.conf) throw new Error('As senhas não conferem'); if (!senhaOk(w.senha)) throw new Error(REGRA);
+          await api('resetPassword', { usuario: us, codigo: w.codigo, hash: await sha(us, w.senha) }); closeModal(); toast('Senha redefinida. Faça login.');
+        }
+      });
+    }
+  });
+}
+function senhaForm(forcar) {
+  S.forceChange = !!forcar;
+  openForm({
+    titulo: forcar ? 'Defina uma nova senha' : 'Alterar minha senha', sub: (forcar ? 'Por segurança, troque a senha provisória antes de continuar. ' : '') + REGRA,
+    campos: [{ k: 'atual', l: 'Senha atual', tipo: 'password', req: 1 }, { k: 'nova', l: 'Nova senha', tipo: 'password', req: 1 }, { k: 'conf', l: 'Confirmar nova senha', tipo: 'password', req: 1 }], ok: 'Salvar nova senha',
+    after: f => { if (forcar) $$('[data-act=close]', $('#modal')).forEach(x => x.remove()); },
+    onSubmit: async v => {
+      if (v.nova !== v.conf) throw new Error('As senhas não conferem'); if (!senhaOk(v.nova)) throw new Error(REGRA);
+      await api('changePassword', { atual: await sha(S.user.usuario, v.atual), novo: await sha(S.user.usuario, v.nova) });
+      S.forceChange = false; closeModal(true); await carregar(); render(); toast('Senha alterada');
+    }
+  });
+}
+function posLogin() { if (S.user && S.user.trocar === 'sim') senhaForm(true); }
+
+/* ---------- shell / render ---------- */
+const pend = () => isM() ? S.usuarios.filter(u => u.ativo === 'pendente').length : 0;
+const TABS = [['kanban', 'Kanban'], ['lista', 'Ordens de serviço'], ['equip', 'Equipamentos'], ['prev', 'Preventiva'], ['ind', 'Indicadores'], ['admin', 'Administração']];
+function render() {
+  if (!S.user) return renderLogin();
+  const tabs = TABS.filter(t => t[0] !== 'admin' || isM()).filter(t => !isT() || ['kanban', 'lista'].includes(t[0]));
+  const views = { kanban: vKanban, lista: vLista, equip: vEquip, prev: vPrev, ind: vInd, admin: vAdmin };
+  if (!tabs.some(t => t[0] === S.view)) S.view = 'kanban';
+  $('#app').innerHTML = `<header class="noprint"><span class="logo">NILO</span><h1>Manutenção de Equipamentos</h1>${CONFIG.API_URL ? '' : '<span class="demo">DEMONSTRAÇÃO</span>'}<div class="who">${esc(S.user.nome)} · ${esc(S.user.perfil)}<br><a href="#" data-act="senha" style="color:#fff">Alterar senha</a> · <a href="#" data-act="logout" style="color:var(--am)">Sair</a></div></header>
+  <nav class="tabs">${tabs.map(t => `<button data-tab="${t[0]}" class="${S.view === t[0] ? 'on' : ''}">${t[1]}${t[0] === 'admin' && pend() ? ` <span class="tag flag">${pend()}</span>` : ''}</button>`).join('')}</nav><main>${views[S.view]()}</main>`;
+  const cf = $('#cfgf'); if (cf) cf.onsubmit = async e => {
+    e.preventDefault(); const f = e.target, tipos = f.tipos.value.split('\n').map(l => l.split(';').map(x => x.trim())).filter(a => a[0]).map(a => ({ nome: a[0], crit: ['alta', 'media', 'baixa'].includes(a[1]) ? a[1] : 'baixa', freq: +a[2] || 180 }));
+    try { await api('saveEntity', { sheet: 'Config', row: { chave: 'sla', valor: { alta: +f.alta.value, media: +f.media.value, baixa: +f.baixa.value } } }); await api('saveEntity', { sheet: 'Config', row: { chave: 'tipos', valor: tipos } }); await carregar(); render(); toast('Configurações salvas'); } catch (x) { toast(x.message); }
+  };
+  charts();
+}
+function renderLogin() {
+  $('#app').innerHTML = `<form id="login"><h1>Manutenção de Equipamentos</h1><p class="muted sm" style="margin-top:0">Rede Nilo · acesso restrito</p>${CONFIG.API_URL ? '' : '<div class="alert sm"><b>Modo demonstração.</b> Acessos: <b>admin / admin123</b> (master), <b>tecnico / tecnico123</b>, <b>loja / loja123</b>.</div>'}<div class="fld"><label>Usuário</label><input name="u" autocomplete="username" required></div><div class="fld"><label>Senha</label><input name="p" type="password" autocomplete="current-password" required></div><button class="btn pri" style="width:100%">Entrar</button><p class="sm" style="text-align:center;margin:12px 0 0"><a href="#" data-act="cadastro">Primeiro acesso / solicitar cadastro</a><br><a href="#" data-act="esqueci">Esqueci minha senha</a>${CONFIG.API_URL ? '<br><a href="#" data-act="diag" class="muted">Testar conexão com o servidor</a>' : ''}</p></form>`;
+  $('#login').onsubmit = async e => {
+    e.preventDefault(); const b = $('button', e.target); b.disabled = true;
+    try { const u = e.target.u.value.trim(), r = await api('login', { usuario: u, hash: await sha(u, e.target.p.value) }); S.token = r.token; try { localStorage.setItem('nilo_manut_sess', r.token); } catch (x) { } await carregar(); render(); posLogin(); }
+    catch (err) { toast(err.message); b.disabled = false; }
+  };
+}
+function logout() { S.forceChange = false; S.user = null; S.token = ''; try { localStorage.removeItem('nilo_manut_sess'); } catch (e) { } closeModal(true); render(); }
+
+/* ---------- eventos ---------- */
+document.addEventListener('click', async e => {
+  const t = e.target.closest('[data-act],[data-tab]'); if (!t) { if (e.target.id === 'modal') closeModal(); return; }
+  if (t.dataset.tab) { S.view = t.dataset.tab; render(); return; }
+  const a = t.dataset.act, os = t.dataset.os, id = t.dataset.id;
+  if (a === 'close') closeModal();
+  else if (a === 'det') detalhe(os);
+  else if (a === 'acao') abrirAcao(os, t.dataset.a);
+  else if (a === 'avancar') abrirAcao(os, t.dataset.a, true);
+  else if (a === 'ficha') ficha(os);
+  else if (a === 'nova') novaOS();
+  else if (a === 'logout') { e.preventDefault(); logout(); }
+  else if (a === 'senha') { e.preventDefault(); senhaForm(false); }
+  else if (a === 'cadastro') { e.preventDefault(); cadastroForm(); }
+  else if (a === 'esqueci') { e.preventDefault(); esqueciForm(); }
+  else if (a === 'diag') { e.preventDefault(); toast('Testando…'); try { const r = await fetch(CONFIG.API_URL), j = JSON.parse(await r.text()); toast(j.ok ? 'Servidor OK — ' + j.data : 'Servidor respondeu com erro: ' + j.error); } catch (err) { toast('Falha: o servidor não respondeu como API (publique a versão nova do Code.gs e use acesso "Qualquer pessoa").'); } }
+  else if (a === 'neweq') eqForm();
+  else if (a === 'eq') eqDetalhe(id);
+  else if (a === 'edit-eq') eqForm(equipOf(id));
+  else if (a === 'nova-eq') novaOS({ equip: equipOf(id) });
+  else if (a === 'plano-eq') planoForm(equipOf(id));
+  else if (a === 'os-plano') { const p = S.planos.find(x => x.id === id); novaOS({ equip: equipOf(p.equipId), tipoMan: 'preventiva', problema: p.descricao, plano: p }); }
+  else if (a === 'import') importar();
+  else if (a === 'tplcsv') { const x = document.createElement('a'); x.href = URL.createObjectURL(new Blob(['patrimonio;serie;descricao;tipo;secao;marca;loja;valorreposicao;garantiaate\n1001;ABC123;Câmara fria laticínios;Câmara fria / congelamento;Frios;Elber;1;45000;2027-03-01'], { type: 'text/csv' })); x.download = 'modelo-inventario.csv'; x.click(); }
+  else if (a === 'genplanos') { let n = 0; for (const eq of S.equips.filter(x => x.ativo !== 'nao' && !S.planos.some(p => p.equipId === x.id))) { const c = tipoCfg(eq.tipo); await api('saveEntity', { sheet: 'Planos', row: { equipId: eq.id, descricao: 'Revisão preventiva conforme plano do grupo', freqDias: c.freq, ultima: '', proxima: dayISO(Date.now() + c.freq * D), ativo: 'sim' } }); n++; } await carregar(); render(); toast(n + ' planos criados'); }
+  else if (a === 'csv') exportCSV();
+  else if (a === 'print') window.print();
+  else if (a === 'nuser') userForm();
+  else if (a === 'euser') userForm(S.usuarios.find(u => u.id === id));
+  else if (a === 'nloja' || a === 'eloja') { const l = a === 'eloja' ? S.lojas.find(x => x.id === id) : {}; simpleForm(l.id ? 'Editar unidade' : 'Nova unidade', 'Lojas', l, [{ k: 'codigo', l: 'Código', req: 1, val: l.codigo }, { k: 'nome', l: 'Nome', req: 1, val: l.nome }, { k: 'polo', l: 'Unidade de manutenção (recebe equipamentos)?', tipo: 'select', opts: [{ v: 'sim', l: 'Sim' }, { v: 'nao', l: 'Não' }], val: l.polo || 'nao', req: 1 }, { k: 'ativo', l: 'Ativa', tipo: 'select', opts: [{ v: 'sim', l: 'Sim' }, { v: 'nao', l: 'Não' }], val: l.ativo || 'sim', req: 1 }]); }
+  else if (a === 'nforn' || a === 'eforn') { const f = a === 'eforn' ? S.forn.find(x => x.id === id) : {}; simpleForm(f.id ? 'Editar fornecedor' : 'Novo fornecedor', 'Fornecedores', f, [{ k: 'nome', l: 'Fornecedor', req: 1, val: f.nome }, { k: 'especialidade', l: 'Especialidade (tipo de equipamento)', tipo: 'select', opts: S.config.tipos.map(t => t.nome), val: f.especialidade, req: 1 }, { k: 'contato', l: 'Contato (telefone/e-mail)', val: f.contato }, { k: 'regiao', l: 'Região de cobertura', val: f.regiao }, { k: 'slaHoras', l: 'SLA contratado (horas)', tipo: 'number', val: f.slaHoras }, { k: 'homologado', l: 'Homologado', tipo: 'select', opts: [{ v: 'sim', l: 'Sim' }, { v: 'nao', l: 'Não' }], val: f.homologado || 'sim', req: 1 }, { k: 'contratoAte', l: 'Contrato até', tipo: 'date', val: f.contratoAte }, { k: 'ativo', l: 'Ativo', tipo: 'select', opts: [{ v: 'sim', l: 'Sim' }, { v: 'nao', l: 'Não' }], val: f.ativo || 'sim', req: 1 }]); }
+  else if (a === 'reset') { if (confirm('Apagar os dados de exemplo e recomeçar?')) { Local.reset(); await carregar(); render(); } }
+});
+document.addEventListener('input', e => { const k = e.target.dataset.f; if (k === 'q') { S.f.q = e.target.value; clearTimeout(S.qt); S.qt = setTimeout(() => { const p = e.target.selectionStart; render(); const n = $('[data-f=q]'); if (n) { n.focus(); n.setSelectionRange(p, p); } }, 250); } });
+document.addEventListener('change', e => { const k = e.target.dataset.f; if (k && k !== 'q') { S.f[k] = e.target.value; render(); } });
+setInterval(() => { $$('[data-since]').forEach(el => el.textContent = fdur(Date.now() - +el.dataset.since, !!el.dataset.sec)); }, 1000);
+setInterval(() => { if (S.user && !$('#modal').classList.contains('on') && ['kanban', 'lista'].includes(S.view) && !document.activeElement.matches('input,select')) render(); }, 60000);
+
+/* ---------- dados de demonstração ---------- */
+function seedDemo() {
+  const h = x => new Date(Date.now() - x * H).toISOString();
+  const lojas = [['1', 'Nilo Vila', 'nao'], ['2', 'Nilo Shopping', 'sim'], ['5', 'Nilo Xavantina', 'nao'], ['7', 'Nilo Água Boa', 'nao'], ['8', 'Nilo Querência', 'nao'], ['9', 'Nilo Jussara', 'nao'], ['10', 'Nilo Canarana', 'nao']].map(([c, n, p]) => ({ id: 'L' + c, codigo: c, nome: n, polo: p, ativo: 'sim' }));
+  const hs = async (u, s) => await sha(u, s);
+  const usuarios = [['admin', 'Administrador (Gerência)', 'master', '*', 'admin123'], ['tecnico', 'Carlos Técnico', 'tecnico', '*', 'tecnico123'], ['tecnico2', 'Marcos Refrigeração', 'tecnico', '*', 'tecnico123'], ['loja', 'Gerente Nilo Vila', 'loja', 'L1', 'loja123']].map(([u, n, p, l, s], i) => ({ id: 'U' + i, nome: n, usuario: u, email: '', perfil: p, lojas: l, ativo: 'sim', hash: 'PENDING:' + u + ':' + s }));
+  const T = CFG_DEFAULT.tipos, tp = n => T.find(t => t.nome.startsWith(n));
+  const eqs = [['1001', 'Câmara fria laticínios', 'Câmara fria', 'L1', 48000], ['1002', 'Compressor rack refrigeração', 'Compressor', 'L1', 32000], ['1003', 'Balança checkout 03', 'Balança', 'L5', 2800], ['2001', 'Freezer ilhas sorvetes', 'Freezer', 'L10', 9500], ['2002', 'Empilhadeira elétrica', 'Empilhadeira', 'L8', 62000], ['2003', 'Split sala de vendas', 'Ar-condicionado (área', 'L7', 7200], ['2004', 'Serra fita açougue', 'Açougue', 'L9', 6800], ['2005', 'Forno turbo padaria', 'Padaria', 'L2', 14000], ['2006', 'Câmara congelados', 'Câmara fria', 'L5', 52000], ['2007', 'Fatiadora frios', 'Açougue', 'L7', 5400], ['2008', 'Quadro elétrico geral', 'Sistema elétrico', 'L8', 30000], ['2009', 'Balança padaria', 'Balança', 'L1', 2600]].map(([p, d, t, l, v], i) => { const c = tp(t); return { id: 'E' + i, patrimonio: p, serie: 'SN' + p + 'X', descricao: d, tipo: c.nome, secao: '', marca: '', lojaId: l, criticidade: c.crit, valorReposicao: v, garantiaAte: i === 5 ? dayISO(Date.now() + 20 * D) : '', ativo: 'sim', criadoEm: h(9000) }; });
+  const forn = [['Frio Center Refrigeração', 'Câmara fria / congelamento', '(66) 3401-0001', 'Barra do Garças e região', 4], ['Termo Sul Refrigeração', 'Câmara fria / congelamento', '(66) 3401-0002', 'Araguaia', 6], ['Balanças Centro-Oeste', 'Balança / pesagem', '(62) 3200-0003', 'MT/GO', 24]].map(([n, e, c, r, s], i) => ({ id: 'F' + i, nome: n, especialidade: e, contato: c, regiao: r, slaHoras: s, homologado: 'sim', contratoAte: i === 1 ? dayISO(Date.now() + 15 * D) : dayISO(Date.now() + 200 * D), ativo: 'sim' }));
+  const planos = eqs.slice(0, 8).map((e, i) => { const c = tipoCfg2(e.tipo); return { id: 'P' + i, equipId: e.id, descricao: 'Revisão preventiva conforme plano do grupo', freqDias: c.freq, ultima: dayISO(Date.now() - (c.freq - (i === 0 ? -5 : i * 4)) * D), proxima: dayISO(Date.now() + (i === 0 ? -5 : i * 4 - 2) * D), ativo: 'sim' }; });
+  function tipoCfg2(n) { return T.find(t => t.nome === n) || { crit: 'baixa', freq: 180 }; }
+  const os = [], hist = []; let seq = 0;
+  const mk = (eqi, man, atend, steps, extra = {}) => {
+    const e = eqs[eqi], num = `OS-${new Date().getFullYear()}-${String(++seq).padStart(4, '0')}`, last = steps[steps.length - 1];
+    const o = { numero: num, criadoEm: h(steps[0][1]), criadoPor: 'U3', lojaOrigem: e.lojaId, equipId: e.id, patrimonio: e.patrimonio, serie: e.serie, descricao: e.descricao, tipo: e.tipo, secao: '', problema: extra.problema || 'Equipamento parou de funcionar', tipoMan: man, criticidade: e.criticidade, status: last[0], etapaDesde: h(last[1]), atendimento: atend || '', lojaDestino: extra.dest || '', fornecedorId: extra.forn || '', tecnicoId: extra.tec || '', pecas: extra.pecas || {}, fotos: [], diagnostico: extra.diag || '', solucao: extra.sol || '', custoPecas: extra.cp || 0, custoMO: extra.mo || 0, nf: '', previsao: '', planoId: extra.plano || '', encerradoEm: ['encerrada', 'cancelada'].includes(last[0]) ? h(last[1]) : '', atualizadoEm: h(last[1]) };
+    os.push(o); steps.forEach((s, i) => hist.push({ id: uid(), os: num, ts: h(s[1]), de: i ? steps[i - 1][0] : '', para: s[0], usuario: s[0] === 'aberta' ? 'U3' : (extra.tec || 'U0'), acao: s[2], obs: s[3] || '' }));
+  };
+  mk(0, 'corretiva', 'terceiro', [['aberta', 30, 'OS aberta', 'Câmara não atinge temperatura'], ['diagnostico', 29, 'Diagnóstico iniciado'], ['pecas', 27, 'Peças: Aguardando chegada das peças', 'Placa controladora e sensor'], ], { tec: 'U1', forn: 'F0', diag: 'Falha na placa controladora', atend: 'terceiro', pecas: { fase: 'aguardando', itens: 'Placa controladora + sensor de degelo', forn: 'Distribuidor Refrigeração SP' } });
+  mk(2, 'corretiva', 'transferir', [['aberta', 12, 'OS aberta', 'Display apagado'], ['diagnostico', 11, 'Diagnóstico iniciado'], ['transito', 10, 'Diagnóstico: transferência para Nilo Shopping']], { tec: 'U1', dest: 'L2', diag: 'Célula de carga com defeito' });
+  mk(4, 'corretiva', 'local', [['aberta', 22, 'OS aberta', 'Não eleva o garfo'], ['diagnostico', 21, 'Diagnóstico iniciado'], ['manutencao', 20, 'Diagnóstico: manutenção na própria loja']], { tec: 'U2', diag: 'Vazamento na mangueira hidráulica' });
+  mk(5, 'corretiva', 'transferir', [['aberta', 45, 'OS aberta'], ['diagnostico', 44, 'Diagnóstico iniciado'], ['transito', 43, 'Diagnóstico: transferência'], ['manutencao', 40, 'Recebimento acusado — Conforme enviado'], ['concluida', 26, 'Serviço concluído'], ['disponivel', 24, 'Equipamento disponível para retirada/transferência']], { tec: 'U1', dest: 'L2', diag: 'Compressor sem gás', sol: 'Recarga de gás e troca de capacitor', cp: 380, mo: 220 });
+  mk(7, 'corretiva', '', [['aberta', 1.2, 'OS aberta', 'Serra não liga']], { problema: 'Serra fita não liga' });
+  mk(1, 'preventiva', 'local', [['aberta', 6, 'OS aberta', 'Limpeza de filtros e revisão'], ['diagnostico', 5.5, 'Diagnóstico iniciado'], ['manutencao', 5, 'Diagnóstico: manutenção na própria loja']], { tec: 'U2', plano: 'P1', problema: 'Revisão preventiva mensal', diag: 'Preventiva programada' });
+  const hist2 = [[3, 'L10', 3.2, 'Freezer ilhas sorvetes', 3, 'Termostato com defeito', 'Troca do termostato', 180, 120], [3, 'L10', 40, '', 5.5, 'Gaxeta danificada', 'Troca da gaxeta', 90, 80], [0, 'L1', 62, '', 7, 'Vazamento de gás', 'Reparo e recarga', 1900, 900], [0, 'L1', 120, '', 3.5, 'Sensor de temperatura', 'Troca de sensor', 150, 100], [0, 'L1', 200, '', 20, 'Ventilador do evaporador', 'Substituição de motor', 1500, 600], [8, 'L5', 80, '', 2.5, 'Termostato desregulado', 'Ajuste e calibração', 0, 150], [9, 'L7', 55, '', 30, 'Lâmina desgastada', 'Troca de lâmina', 320, 120], [6, 'L9', 30, '', 70, 'Rolamento danificado', 'Troca de rolamento', 450, 200], [10, 'L8', 90, '', 50, 'Disjuntor geral', 'Troca de disjuntor', 600, 400]];
+  hist2.forEach(([eqi, , ago, , dur, diag, sol, cp, mo]) => mk(eqi, 'corretiva', 'local', [['aberta', ago * 24, 'OS aberta', diag], ['diagnostico', ago * 24 - .3, 'Diagnóstico iniciado'], ['manutencao', ago * 24 - .5, 'Diagnóstico: manutenção na própria loja'], ['encerrada', ago * 24 - dur, 'Serviço concluído — equipamento operando']], { tec: 'U1', diag, sol, cp, mo }));
+  return { lojas, usuarios, equipamentos: eqs, fornecedores: forn, planos, os, hist, config: { sla: CFG_DEFAULT.sla, tipos: CFG_DEFAULT.tipos }, pendingHash: true };
+}
+/* hashes dos usuários demo (assíncrono) */
+async function prepDemo() {
+  if (CONFIG.API_URL) return;
+  const d = Local.db(); let ch = false;
+  for (const u of d.usuarios) if (String(u.hash).startsWith('PENDING:')) { const [, us, pw] = u.hash.split(':'); u.hash = await sha(us, pw); ch = true; }
+  if (ch) Local.save(d);
+}
+
+/* ---------- boot ---------- */
+(async function () {
+  await prepDemo();
+  let tk = ''; try { tk = localStorage.getItem('nilo_manut_sess') || ''; } catch (e) { }
+  if (tk) { S.token = tk; try { await carregar(); } catch (e) { S.user = null; S.token = ''; if (!CONFIG.API_URL || e.code !== 'auth') { try { const c = JSON.parse(localStorage.getItem('nilo_manut_cache')); if (c && e.code !== 'auth' && CONFIG.API_URL) { toast('Sem conexão — exibindo últimos dados salvos'); } } catch (x) { } } } }
+  render(); posLogin();
+})();
+</script>
+</body>
+</html>
